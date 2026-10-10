@@ -1,0 +1,217 @@
+export type UserRole = 'farmer' | 'owner' | 'admin';
+export type Language = 'en' | 'ta';
+export type ServiceMode = 'cold' | 'inventory';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  role: UserRole;
+  phone: string;
+  location: string;
+  farmerId?: string;
+  facilityId?: string;
+  avatarUrl: string;
+}
+
+export interface Chamber {
+  id: string;
+  name: string;
+  type: 'chilled' | 'cool' | 'controlled_atmosphere' | 'dry_ventilated';
+  tempMin: number;
+  tempMax: number;
+  currentTemp: number;
+  humidity: number;
+  totalCapacityCrates: number;
+  availableCapacityCrates: number;
+  totalCapacityKg: number;
+  availableCapacityKg: number;
+  isMaintenance: boolean;
+  maintenanceReason?: string;
+}
+
+export interface Facility {
+  id: string;
+  name: string;
+  nameTa: string;
+  location: string;
+  locationTa: string;
+  district: string;
+  distanceKm: number;
+  coordinates: { lat: number; lng: number };
+  rating: number;
+  reviewCount: number;
+  verified: boolean;
+  solarPowered: boolean;
+  imageUrl: string;
+  pricePerCrateDay: number;
+  pricePerKgDay: number;
+  chambers: Chamber[];
+  supportedCrops: string[];
+  supportedCropsTa: string[];
+  contactPhone: string;
+  operatingHours: string;
+  lastUpdatedMinutesAgo: number;
+  managerName: string;
+  managerImage: string;
+}
+
+export type BookingStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'en_route'
+  | 'gate_arrived'
+  | 'verified_intake'
+  | 'in_storage'
+  | 'partially_collected'
+  | 'completed'
+  | 'cancelled'
+  | 'needs_resolution';
+
+export interface Booking {
+  id: string;
+  bookingCode: string; // e.g. #SRS-TN-8492
+  farmerId: string;
+  farmerName: string;
+  farmerPhone: string;
+  facilityId: string;
+  facilityName: string;
+  chamberId: string;
+  chamberName: string;
+  cropName: string;
+  cropNameTa: string;
+  variety: string;
+  grade: 'Grade A' | 'Grade B' | 'Standard';
+  bookedCrates: number;
+  bookedKg: number;
+  verifiedKg?: number;
+  verifiedCrates?: number;
+  startDate: string;
+  durationDays: number;
+  endDate: string;
+  dailyRateCrate: number;
+  totalEstimatedCost: number;
+  status: BookingStatus;
+  batchPin: string;
+  createdAt: string;
+  hasConflict?: boolean;
+  conflictDetails?: ConflictNotice;
+  cropImageUrl: string;
+}
+
+export interface InventoryBatch {
+  id: string;
+  batchCode: string; // e.g. #TN-DDG-088
+  bookingId: string;
+  farmerId: string;
+  farmerName: string;
+  facilityId: string;
+  facilityName: string;
+  chamberName: string;
+  cropName: string;
+  cropNameTa: string;
+  grade: string;
+  cropImageUrl: string;
+  currentStockKg: number;
+  currentStockCrates: number;
+  initialStockKg: number;
+  withdrawnKg: number;
+  dayCurrent: number;
+  dayTotal: number;
+  intakeDate: string;
+  targetCollectDate: string;
+  currentTemp: number;
+  currentHumidity: number;
+  status: 'in_storage' | 'in_transit' | 'ready_to_collect' | 'withdrawn';
+  qualityScore: number;
+  notes?: string;
+}
+
+export interface InventoryMovement {
+  id: string;
+  batchId: string;
+  batchCode: string;
+  timestamp: string;
+  type: 'intake' | 'partial_withdrawal' | 'full_dispatch' | 'spoilage_writeoff' | 'chamber_relocation';
+  quantityKg: number;
+  quantityCrates: number;
+  authorizedBy: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  reason: string;
+  receiptNumber: string;
+}
+
+export interface ConflictNotice {
+  id: string;
+  bookingCode: string;
+  facilityId: string;
+  facilityName: string;
+  chamberName: string;
+  bookedKg: number;
+  availableKg: number;
+  deficitKg: number;
+  spaceCutPercentage: number;
+  managerName: string;
+  managerNote: string;
+  managerImage: string;
+  gateInTime: string;
+  resolved: boolean;
+  selectedOption?: 'accept_partial' | 'reroute' | 'reschedule' | 'cancel_refund';
+  resolutionTimestamp?: string;
+}
+
+export interface InspectionRequest {
+  id: string;
+  batchCode: string;
+  cropName: string;
+  farmerId: string;
+  farmerName: string;
+  facilityId: string;
+  facilityName: string;
+  chamberName: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  status: 'pending' | 'approved' | 'in_progress' | 'completed' | 'declined';
+  notes?: string;
+  discrepancyReported?: boolean;
+  discrepancyDetails?: string;
+}
+
+export interface FeedbackReview {
+  id: string;
+  bookingCode: string;
+  facilityId: string;
+  facilityName: string;
+  farmerName: string;
+  rating: number; // 1-5
+  comment: string;
+  createdAt: string;
+  isComplaint: boolean;
+  complaintCategory?: string;
+  complaintStatus?: 'open' | 'under_review' | 'resolved' | 'disputed';
+  ownerResponse?: string;
+  revisitBooked?: boolean;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  titleTa: string;
+  message: string;
+  messageTa: string;
+  timestamp: string;
+  type: 'booking' | 'pickup' | 'conflict' | 'temperature' | 'inspection' | 'system';
+  read: boolean;
+  linkUrl?: string;
+}
+
+export interface AIPriceForecastPoint {
+  day: string;
+  date: string;
+  spotPrice: number;
+  projectedPrice: number;
+  lowerConfidence: number;
+  upperConfidence: number;
+  cumulativeStorageCost: number;
+  netArbitrageMargin: number;
+}

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-fixed-dim": "#94d5a7", "on-secondary": "#ffffff", "surface-container-highest": "#dde4dd", "outline-variant": "#c0c9bf", "on-error-container": "#93000a", "on-background": "#161d18", "on-error": "#ffffff", "primary-container": "#1e5e3a", "on-tertiary": "#ffffff", "surface-bright": "#f4fbf3", "outline": "#707971", "on-primary": "#ffffff", "secondary": "#006c49", "secondary-fixed": "#86f8c2", "on-surface": "#161d18", "on-tertiary-fixed-variant": "#723600", "tertiary-container": "#844000", "background": "#f4fbf3", "on-tertiary-fixed": "#311300", "surface-container-low": "#eef6ed", "surface-dim": "#d5dcd4", "on-secondary-fixed": "#002113", "on-secondary-fixed-variant": "#005236", "on-secondary-container": "#00734e", "primary-fixed": "#aff2c2", "error": "#ba1a1a", "inverse-surface": "#2b322d", "on-primary-fixed": "#00210f", "inverse-on-surface": "#ebf3eb", "on-primary-container": "#94d5a8", "secondary-container": "#86f8c2", "secondary-fixed-dim": "#69dba8", "surface-container-lowest": "#ffffff", "surface-container": "#e9f0e8", "surface": "#f4fbf3", "surface-tint": "#2b6a45", "error-container": "#ffdad6", "surface-container-high": "#e3eae2", "tertiary-fixed": "#ffdcc6", "on-tertiary-container": "#ffb787", "on-surface-variant": "#404941", "inverse-primary": "#94d5a7", "tertiary-fixed-dim": "#ffb786", "tertiary": "#612d00", "surface-variant": "#dde4dd", "on-primary-fixed-variant": "#0d512f", "primary": "#004625" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "space-lg": "1.5rem", "space-xl": "2.25rem", "margin": "1rem", "space-md": "1rem", "gutter-desktop": "1.5rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "gutter": "1rem" }, fontFamily: { "display-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-md": ["Noto Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Noto Sans"], "body-lg": ["Noto Sans"], "label-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"] }, fontSize: { "display-lg": ["3rem", { "lineHeight": "3.5rem", "fontWeight": "700" }], "headline-lg": ["2rem", { "lineHeight": "2.5rem", "fontWeight": "700" }], "label-md": ["0.875rem", { "lineHeight": "1.125rem", "fontWeight": "600" }], "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "fontWeight": "600" }], "body-md": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "600" }], "body-sm": ["0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" }], "label-lg": ["1rem", { "lineHeight": "1.25rem", "fontWeight": "600" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "fontWeight": "600" }], "headline-lg-mobile": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "700" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface flex flex-col min-h-screen selection:bg-secondary-fixed selection:text-on-secondary-fixed"><header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.05)]"><div class="h-20 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="Smart Rural Storage Logo" class="h-9 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1UegikTd_2GHmmlIFMnArdgWjnCxKnn7srQYnFidt1lWNpbg3w0eLIEUyxDAWEHMbXDYbepabYUJbpUDmr4y_0HjZS1LqKI3GK1xHXsH_770wawpGWwcw46b2W81mUi9rZohIr1fnAryLW64IwXtH3q_e7u6c6q5qbkuiSb3TIv-ZKTCI0pHm-bsAlD7xKjBPRiycTm4vpRSLBtL-TEcIO2fW8f8T3ylxRTVLnjCCeRA_zpIK3pan9xtG8"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight truncate font-bold" data-en="Smart Rural Storage" data-ta="ஸ்மார்ட் ரூரல் ஸ்டோரேஜ்">Smart Rural Storage</span><span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-secondary-container/50 text-on-secondary-container font-label-sm text-[10px] font-bold leading-none"><span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span><span data-en="LIVE HUB" data-ta="நேரடி மையம்">LIVE HUB</span></span></div><span class="font-label-sm text-[11px] text-on-surface-variant truncate font-medium" data-en="Tamil Nadu Agro Cold Network" data-ta="ஸ்மார்ட் கிராமப்புற சேமிப்பகம்">Tamil Nadu Agro Cold Network</span></div></div><div class="flex items-center gap-space-sm flex-shrink-0"><button aria-label="Toggle Language English or Tamil" class="h-9 p-1 bg-surface-container rounded-full flex items-center gap-1 hover:bg-surface-container-high active:bg-surface-container-highest transition-colors cursor-pointer" id="lang-toggle-btn" onclick="toggleLanguage()" type="button"><span class="font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-primary-container text-on-primary font-semibold shadow-xs transition-all" id="pill-en">EN</span><span class="font-label-sm text-[11px] px-1.5 py-0.5 text-on-surface-variant font-medium transition-all" id="pill-ta">தமிழ்</span></button><button aria-label="Farmer Profile" class="w-9 h-9 rounded-full ring-2 ring-primary-container/20 flex items-center justify-center overflow-hidden" type="button"><img alt="Farmer Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNnZGtf5czjNsSFZ2nrKzb2Rdo07TdqDSolKywsBKmTKy3GR81WEgT4KZnH48fUwBnwogn_s39wKe6_072iD9i61xfwr0FN21UeJLmrD9Ry0t13k2XRQbo4YKa0Mk-nNtwGREbQCddD2bn-YAnIDFN5wa9y_9Go8C0QcFgNT-Tp2m3RiRmzab_ERmiLWzgcSOwXwr5rGP97a4kdU4PMkQwStRfK8m70VvG6GJJlagIP9xaWZFUbyDWBg"/></button></div></div></header><main class="flex flex-col relative w-full pt-20 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-margin pb-space-xl space-y-space-md">
+<!-- Confetti Canvas for Delight Burst upon Confirmation load -->
+<canvas class="pointer-events-none fixed inset-0 z-40 w-full h-full opacity-90" height="884" id="delight-confetti" width="390"></canvas>
+<!-- Top Quick Notification Banner with Pulse Indicator -->
+<div class="w-full bg-secondary-container/80 text-on-secondary-fixed rounded-xl p-space-sm flex items-center justify-between shadow-sm">
+<div class="flex items-center space-x-2 min-w-0">
+<span class="relative flex h-3 w-3 flex-shrink-0">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm truncate font-bold text-on-secondary-fixed" data-en="Chamber Bay Reserved" data-ta="குளிரூட்டும் கூடம் முன்பதிவு தயார்">Chamber Bay Reserved</span>
+<span class="font-body-sm text-[11px] text-on-secondary-fixed-variant truncate" data-en="Cold chamber bay reserved &amp; ready" data-ta="பச்சை உறுதி செய்யப்பட்டது • வருகை தயார்">Cold chamber bay reserved &amp; ready</span>
+</div>
+</div>
+<span class="font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-surface-container-lowest text-secondary font-bold flex-shrink-0 shadow-xs" data-en="Auto-Synced" data-ta="தானியங்கி ஒத்திசைவு">Auto-Synced</span>
+</div>
+<!-- Booking Header / Status Hub Card -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" data-en="Booking ID" data-ta="முன்பதிவு எண்">Booking ID</span>
+<div class="flex items-center space-x-1.5 mt-0.5">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary-container font-extrabold tracking-tight">#SRS-TN-8492</span>
+<button aria-label="Copy booking reference number" class="p-1 rounded-full hover:bg-surface-container transition-colors text-outline active:scale-95" id="copy-btn" onclick="navigator.clipboard.writeText('SRS-TN-8492'); showToast();" title="Copy ID">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-bold shadow-xs">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span data-en="CONFIRMED" data-ta="உறுதி செய்யப்பட்டது">CONFIRMED</span>
+</span>
+<span class="font-body-sm text-[11px] text-secondary mt-1 font-semibold" data-en="All checks validated" data-ta="பச்சை உறுதி செய்யப்பட்டது">All checks validated</span>
+</div>
+</div>
+<!-- Live Toast Message (Hidden initially) -->
+<div class="hidden absolute top-2 right-4 bg-primary text-on-primary font-label-sm text-[11px] px-2.5 py-1 rounded-full shadow-md transition-all" data-en="Copied to clipboard!" data-ta="நகலெடுக்கப்பட்டது!" id="toast-msg">
+      Copied to clipboard!
+    </div>
+</section>
+<!-- Digital QR Gate Pass Card (High-Contrast & Field-Ready) -->
+<section class="w-full bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm relative">
+<!-- Top Decorative Harvest Strip -->
+<div class="h-2.5 w-full bg-gradient-to-r from-primary-container via-secondary to-primary-fixed-dim"></div>
+<div class="p-space-md flex flex-col space-y-space-md">
+<!-- Title & Bilingual Subtitle -->
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-on-surface font-bold" data-en="Digital Gate Pass" data-ta="மின் நுழைவுச் சீட்டு">Digital Gate Pass</h2>
+<p class="font-body-sm text-[11px] text-on-surface-variant" data-en="Valid for Inbound Gate Intake" data-ta="மின் நுழைவுச் சீட்டு • Valid for Intake">Valid for Inbound Gate Intake</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block" data-en="Batch PIN" data-ta="தொகுதி பின்">Batch PIN</span>
+<span class="font-headline-sm text-headline-sm text-tertiary-container font-extrabold tracking-widest bg-tertiary-fixed px-2 py-0.5 rounded-lg inline-block">4892</span>
+</div>
+</div>
+<!-- QR Display & Camera Scanner Area -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col items-center justify-center relative overflow-hidden">
+<!-- High Contrast Interactive QR Code Container -->
+<div class="relative bg-surface-container-lowest p-3 rounded-lg shadow-sm flex flex-col items-center">
+<!-- Procedurally Rendered SVG QR with Center Harvest Sprout Badge -->
+<svg class="w-44 h-44 text-on-surface" fill="currentColor" viewbox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+<!-- Position Detection Patterns (Top-Left) -->
+<rect fill="currentColor" height="36" rx="4" width="36" x="10" y="10"></rect>
+<rect fill="white" height="24" rx="2" width="24" x="16" y="16"></rect>
+<rect fill="currentColor" height="12" rx="2" width="12" x="22" y="22"></rect>
+<!-- Position Detection Patterns (Top-Right) -->
+<rect fill="currentColor" height="36" rx="4" width="36" x="114" y="10"></rect>
+<rect fill="white" height="24" rx="2" width="24" x="120" y="16"></rect>
+<rect fill="currentColor" height="12" rx="2" width="12" x="126" y="22"></rect>
+<!-- Position Detection Patterns (Bottom-Left) -->
+<rect fill="currentColor" height="36" rx="4" width="36" x="10" y="114"></rect>
+<rect fill="white" height="24" rx="2" width="24" x="16" y="120"></rect>
+<rect fill="currentColor" height="12" rx="2" width="12" x="22" y="126"></rect>
+<!-- Pseudo QR Grid Data Blocks -->
+<rect height="8" rx="1.5" width="8" x="52" y="14"></rect>
+<rect height="8" rx="1.5" width="8" x="64" y="14"></rect>
+<rect height="8" rx="1.5" width="12" x="80" y="14"></rect>
+<rect height="8" rx="1.5" width="8" x="96" y="14"></rect>
+<rect height="8" rx="1.5" width="12" x="52" y="26"></rect>
+<rect height="12" rx="1.5" width="8" x="74" y="26"></rect>
+<rect height="8" rx="1.5" width="16" x="88" y="26"></rect>
+<rect height="16" rx="1.5" width="8" x="52" y="42"></rect>
+<rect height="8" rx="1.5" width="16" x="68" y="42"></rect>
+<rect height="8" rx="1.5" width="8" x="92" y="42"></rect>
+<rect height="8" rx="1.5" width="12" x="14" y="52"></rect>
+<rect height="8" rx="1.5" width="14" x="32" y="52"></rect>
+<rect height="8" rx="1.5" width="10" x="114" y="52"></rect>
+<rect height="8" rx="1.5" width="16" x="130" y="52"></rect>
+<rect height="14" rx="1.5" width="8" x="14" y="66"></rect>
+<rect height="8" rx="1.5" width="18" x="28" y="66"></rect>
+<rect height="8" rx="1.5" width="20" x="114" y="66"></rect>
+<rect height="14" rx="1.5" width="8" x="140" y="66"></rect>
+<rect height="8" rx="1.5" width="16" x="14" y="86"></rect>
+<rect height="14" rx="1.5" width="10" x="36" y="86"></rect>
+<rect height="8" rx="1.5" width="12" x="114" y="86"></rect>
+<rect height="8" rx="1.5" width="16" x="132" y="86"></rect>
+<rect height="12" rx="1.5" width="8" x="52" y="104"></rect>
+<rect height="8" rx="1.5" width="14" x="66" y="104"></rect>
+<rect height="8" rx="1.5" width="18" x="86" y="104"></rect>
+<rect height="8" rx="1.5" width="12" x="52" y="122"></rect>
+<rect height="18" rx="1.5" width="8" x="70" y="122"></rect>
+<rect height="8" rx="1.5" width="16" x="84" y="122"></rect>
+<rect height="8" rx="1.5" width="16" x="52" y="136"></rect>
+<rect height="8" rx="1.5" width="16" x="84" y="136"></rect>
+<rect height="16" rx="1.5" width="8" x="108" y="104"></rect>
+<rect height="8" rx="1.5" width="14" x="122" y="104"></rect>
+<rect height="12" rx="1.5" width="8" x="142" y="104"></rect>
+<rect height="8" rx="1.5" width="16" x="114" y="126"></rect>
+<rect height="8" rx="1.5" width="14" x="136" y="126"></rect>
+<rect height="8" rx="1.5" width="8" x="114" y="140"></rect>
+<rect height="8" rx="1.5" width="20" x="128" y="140"></rect>
+<!-- Centered Emblem -->
+<circle cx="80" cy="80" fill="white" r="16"></circle>
+<circle class="text-primary-container" cx="80" cy="80" fill="currentColor" r="13"></circle>
+<path d="M76 83C76 77 84 73 84 73C84 73 84 81 80 84C78 85.5 76 84.5 76 83Z" fill="white"></path>
+<path d="M84 83C84 78 78 75 78 75C78 75 78 82 82 84C83.5 85 84 84 84 83Z" fill="#86F8C2"></path>
+</svg>
+<div class="mt-2 text-center"><span class="font-label-sm text-[11px] text-on-surface-variant font-medium" data-en="Scan at Gate Inbound Station" data-ta="நுழைவு வாயிலில் காட்டவும்">Scan at Gate Inbound Station</span></div>
+</div>
+</div>
+<!-- Itemized Produce & Location Details Grid -->
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Produce Information Tile -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col justify-between"><div class="flex items-center space-x-1.5 text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-tertiary">nutrition</span><span class="font-label-sm text-[11px] uppercase tracking-wide" data-en="Produce Lot" data-ta="பயிர் விவரம்">Produce Lot</span></div><div class="mt-1.5"><span class="font-label-md text-label-md text-on-surface block font-bold truncate" data-en="Fresh Tomato (Hybrid)" data-ta="நவீன தக்காளி வகை">Fresh Tomato (Hybrid)</span><div class="mt-1.5 inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container text-primary-container font-label-sm text-[11px] font-bold" data-en="50 Crates / 1,250 kg" data-ta="50 பெட்டிகள் / 1,250 கிகி">50 Crates / 1,250 kg</div></div></div>
+<!-- Facility Information Tile -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col justify-between"><div class="flex items-center space-x-1.5 text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-primary">solar_power</span><span class="font-label-sm text-[11px] uppercase tracking-wide" data-en="Facility Hub" data-ta="சேமிப்பு மையம்">Facility Hub</span></div><div class="mt-1.5"><span class="font-label-md text-label-md text-on-surface block font-bold truncate" data-en="Uzhavar Solar Hub #14" data-ta="ஒட்டன்சத்திரம் உழவர் மையம்">Uzhavar Solar Hub #14</span><div class="mt-1.5 inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-bold" data-en="Bay 1 • Dock B" data-ta="பகுதி 1 • கப்பல்துறை B">Bay 1 • Dock B</div></div></div>
+</div>
+<!-- Scheduled Intake Slot Banner -->
+<div class="bg-surface-container rounded-lg p-space-sm flex items-center justify-between">
+<div class="flex items-center space-x-2.5 min-w-0">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">event_available</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider block" data-en="Intake Window" data-ta="நுழைவு நேரம்">Intake Window</span>
+<span class="font-label-md text-label-md text-on-surface font-bold truncate block" data-en="Tomorrow, 17 Oct • 08:30 AM - 10:00 AM" data-ta="நாளை, 17 அக் • 08:30 மு.ப - 10:00 மு.ப">Tomorrow, 17 Oct • 08:30 AM - 10:00 AM</span>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-tertiary-container bg-tertiary-fixed font-bold px-2 py-0.5 rounded-md flex-shrink-0 ml-2" data-en="Slot Locked" data-ta="முன்பதிவு உறுதி">Slot Locked</span>
+</div>
+</div>
+</section>
+<!-- Interactive 8-Stage Lifecycle Timeline -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[20px] text-primary">route</span>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold" data-en="Storage Journey Timeline" data-ta="சேமிப்பு பயண வரிசை">Storage Journey Timeline</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant" data-en="8 Stages from intake to withdrawal" data-ta="முன்பதிவு முதல் இருப்பு வரை 8 நிலைகள்">8 Stages from intake to withdrawal</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold px-2 py-0.5 rounded-full bg-secondary-fixed/50" data-en="Stage 3 of 8" data-ta="நிலை 3 / 8">Stage 3 of 8</span>
+</div>
+<div class="relative mt-2 pl-4 space-y-4"><div class="absolute left-7 top-3 bottom-5 w-0.5 bg-surface-container-highest"></div><div class="relative flex items-start space-x-3 group"><div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 shadow-xs z-10"><span class="material-symbols-outlined text-[16px]">check</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-bold" data-en="1. Booking Requested" data-ta="1. முன்பதிவு கோரப்பட்டது">1. Booking Requested</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="16 Oct, 10:15 AM" data-ta="16 அக், 10:15 மு.ப">16 Oct, 10:15 AM</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="50 crates slotted &amp; allocated" data-ta="50 பெட்டிகள் ஒதுக்கப்பட்டன">50 crates slotted &amp; allocated</p></div></div><div class="relative flex items-start space-x-3 group"><div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 shadow-xs z-10"><span class="material-symbols-outlined text-[16px]">check</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-bold" data-en="2. Capacity Validated" data-ta="2. கொள்ளளவு சரிபார்க்கப்பட்டது">2. Capacity Validated</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="16 Oct, 10:18 AM" data-ta="16 அக், 10:18 மு.ப">16 Oct, 10:18 AM</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Storage capacity verified &amp; held" data-ta="கிடங்கு கொள்ளளவு உறுதியானது">Storage capacity verified &amp; held</p></div></div><div class="relative flex items-start space-x-3 group"><div class="relative z-10"><div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center flex-shrink-0 shadow-md"><span class="material-symbols-outlined text-[16px] animate-pulse">passkey</span></div><div class="absolute -inset-1 rounded-full bg-secondary-fixed opacity-60 animate-ping pointer-events-none"></div></div><div class="flex-1 bg-secondary-fixed/30 rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-secondary-fixed font-bold flex items-center gap-1"><span data-en="3. Gate Pass Issued" data-ta="3. மின் நுழைவுச் சீட்டு வழங்கப்பட்டது">3. Gate Pass Issued</span><span class="w-2 h-2 rounded-full bg-secondary inline-block"></span></span><span class="font-label-sm text-[11px] text-on-secondary-fixed font-bold bg-secondary-fixed px-2 py-0.5 rounded-full" data-en="ACTIVE NOW" data-ta="செயலில் உள்ளது">ACTIVE NOW</span></div><p class="font-body-sm text-[11px] text-on-secondary-fixed-variant mt-0.5" data-en="Pass ready for intake tomorrow" data-ta="நாளை வருகைக்கான பாஸ் தயார்">Pass ready for intake tomorrow</p></div></div><div class="relative flex items-start space-x-3 opacity-75"><div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center flex-shrink-0 z-10"><span class="material-symbols-outlined text-[16px]">scale</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-semibold" data-en="4. Arrival &amp; Weighing" data-ta="4. வருகை மற்றும் எடை போடுதல்">4. Arrival &amp; Weighing</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="Step 4" data-ta="படி 4">Step 4</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Scheduled tomorrow 08:30 AM" data-ta="திட்டமிடப்பட்டது 08:30 மு.ப">Scheduled tomorrow 08:30 AM</p></div></div><div class="relative flex items-start space-x-3 opacity-70"><div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center flex-shrink-0 z-10"><span class="material-symbols-outlined text-[16px]">verified</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-semibold" data-en="5. AI Quality Check" data-ta="5. AI தரப் பரிசோதனை">5. AI Quality Check</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="Step 5" data-ta="படி 5">Step 5</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Optical grading &amp; batch QR stamp" data-ta="தரம் பிரித்தல் &amp; கிரேடிங் QR முத்திரை">Optical grading &amp; batch QR stamp</p></div></div><div class="relative flex items-start space-x-3 opacity-60"><div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center flex-shrink-0 z-10"><span class="material-symbols-outlined text-[16px]">ac_unit</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-semibold" data-en="6. In Cold Storage" data-ta="6. குளிர் அறையில் இருப்பு">6. In Cold Storage</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="Step 6" data-ta="படி 6">Step 6</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Chamber 1 (Maintained 4°C - 6°C)" data-ta="குளிரூட்டும் கிடங்கில் பாதுகாப்பு (4°C - 6°C)">Chamber 1 (Maintained 4°C - 6°C)</p></div></div><div class="relative flex items-start space-x-3 opacity-55"><div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center flex-shrink-0 z-10"><span class="material-symbols-outlined text-[16px]">unarchive</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-semibold" data-en="7. Retrieval / Withdrawal" data-ta="7. வெளியேற்றம் / மீட்டல்">7. Retrieval / Withdrawal</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="Step 7" data-ta="படி 7">Step 7</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Partial or full lot retrieval" data-ta="விற்பனைக்கான பகுதி/முழு மீட்பு">Partial or full lot retrieval</p></div></div><div class="relative flex items-start space-x-3 opacity-50"><div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center flex-shrink-0 z-10"><span class="material-symbols-outlined text-[16px]">thumb_up</span></div><div class="flex-1 bg-surface-container-low rounded-lg p-2.5"><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface font-semibold" data-en="8. Collection &amp; Sign-Off" data-ta="8. நிறைவு &amp; ஒப்படைப்பு">8. Collection &amp; Sign-Off</span><span class="font-label-sm text-[11px] text-on-surface-variant" data-en="Step 8" data-ta="படி 8">Step 8</span></div><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Final ledger closing &amp; receipt" data-ta="இறுதி தீர்வு மற்றும் விவசாயி ஒப்புதல்">Final ledger closing &amp; receipt</p></div></div></div>
+</section>
+<!-- Navigation & Turn-by-Turn Arrival Instructions -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">directions_bus</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold" data-en="Facility Route &amp; Access" data-ta="வழிசெலுத்தல் மற்றும் நுழைவு வழிகாட்டுதல்கள்">Facility Route &amp; Access</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant" data-en="Navigation and gate access instructions" data-ta="ஒட்டன்சத்திரம் உழவர் மையம் வழிகாட்டி">Navigation and gate access instructions</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant font-semibold" data-en="3.2 km • 8 min" data-ta="3.2 கி.மீ • 8 நிமி">3.2 km • 8 min</span>
+</div>
+<!-- Map Thumbnail View with data-location -->
+<div class="relative w-full h-44 rounded-xl overflow-hidden shadow-xs">
+<div class="w-full h-full bg-cover bg-center" data-location="Uzhavar Solar Hub 14, Oddanchatram, Tamil Nadu" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4F22TBvE7iJyQH0arBAD93fdTo7NixcR7VWG1KdlSuJ5k8sXlO20tk9TcDaOe5OH0GxzfLD6pqFhxHinGzcpBG6I_yRVHZzmXO0EpwmMen_9rALCsgia3gqY660dpprrTyJ9oopoUz6jcZj7SbsR0JyeyjHuxD_1FYbsTCCNIv5ioayhPm9IoTHvRy5ylJyttPUZxtlu9uXbqWgzMDgB6eItVt0-1CCaw4Uj8jbghMs8UQrTu84LGlg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex flex-col justify-end p-space-sm">
+<div class="flex items-center justify-between text-surface">
+<div>
+<span class="font-label-sm text-[12px] font-bold block text-inverse-on-surface" data-en="Oddanchatram Central Road, Bay Entrance Gate 2" data-ta="ஒட்டன்சத்திரம் மத்திய சாலை, வாயில் 2">Oddanchatram Central Road, Bay Entrance Gate 2</span>
+<span class="font-body-sm text-[10px] text-inverse-on-surface/80" data-en="Near Oddanchatram Vegetable Market" data-ta="ஒட்டன்சத்திரம் மார்க்கெட் அருகில்">Near Oddanchatram Vegetable Market</span>
+</div>
+<a aria-label="Open directions in Google Maps" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-[12px] font-semibold flex items-center space-x-1 shadow-sm active:scale-95 transition-transform" href="https://maps.google.com" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">near_me</span>
+<span data-en="Directions" data-ta="திசைகள்">Directions</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Facility Gate Guidelines Card -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex items-start space-x-3"><span class="material-symbols-outlined text-[20px] text-tertiary-container flex-shrink-0 mt-0.5">info</span><div class="text-on-surface-variant min-w-0"><p class="font-label-sm text-[12px] text-on-surface font-bold" data-en="Gate &amp; Platform Guidelines" data-ta="எடை மேடை வழிகாட்டுதல்">Gate &amp; Platform Guidelines</p><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5" data-en="Tractor &amp; mini-truck clearance: 3.8m • 24/7 Gate open • Keep QR ready" data-ta="டிராக்டர்/மினி-லாரி அனுமதி: 3.8 மீ • 24 மணி நேரமும் செயல்படும் • QR தயார் வைக்கவும்">Tractor &amp; mini-truck clearance: 3.8m • 24/7 Gate open • Keep QR ready</p></div></div>
+<!-- Facility Contact Quick Action -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center space-x-2">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="Close up warm portrait of a friendly rural Tamil warehouse coordinator wearing a green vest with a name tag smiling warmly outdoors under sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5ccM_TokkjIwRGtm3dTwn1FYbEX5uPo6onjuXh4r9_areh5esDon7oZa0Pzi7NfdTDGLZol4F19moTK8srC2DwimK-_SXlw2F-2CCykMk3BErVUZ11YL2vgoWDTqm3LeSMMx0P3-B3ekH3WFVBBp-B_ghM9QbUbaaR3Z3rXc1Iusctfm7IhtKDtaIZuRJBzfoEaIInADlB171EdPKwnZorgGBjWAvhLYHZQI08A4V8A-c8acu4-7B3g"/>
+<div>
+<span class="font-label-sm text-[12px] font-bold text-on-surface block" data-en="M. Pandian (Gate In-charge)" data-ta="மு. பாண்டியன் (வாயில் மேற்பார்வையாளர்)">M. Pandian (Gate In-charge)</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant" data-en="Field Supervisor • Uzhavar Hub #14" data-ta="கள மேற்பார்வையாளர் • Uzhavar Hub #14">Field Supervisor • Uzhavar Hub #14</span>
+</div>
+</div>
+<a aria-label="Call gate incharge" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary-container font-label-sm text-[12px] font-bold flex items-center space-x-1 active:scale-95 transition-transform" href="tel:+919876543210">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span data-en="Call Gate" data-ta="அழைக்க">Call Gate</span>
+</a>
+</div>
+</section>
+<!-- Itemized Payment Summary & Spoilage Guarantee -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-sm"><div class="flex items-center space-x-2"><div class="w-8 h-8 rounded-lg bg-primary-fixed text-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">payments</span></div><div><h3 class="font-label-lg text-label-lg text-on-surface font-bold" data-en="Payment &amp; Insurance" data-ta="கட்டண விவரம் &amp; காப்பீடு">Payment &amp; Insurance</h3><p class="font-body-sm text-[11px] text-on-surface-variant" data-en="Cost breakdown &amp; coverage details" data-ta="முழு கட்டண விவரம் மற்றும் பாலிசி">Cost breakdown &amp; coverage details</p></div></div><div class="space-y-2 pt-1 font-body-sm text-[13px]"><div class="flex justify-between items-center text-on-surface-variant"><span data-en="Base Fee (15 Days • 50 Crates)" data-ta="அடிப்படை கட்டணம் (15 நாட்கள் • 50 பெட்டிகள்)">Base Fee (15 Days • 50 Crates)</span><span class="font-label-sm text-on-surface font-semibold">₹950.00</span></div><div class="flex justify-between items-center text-on-surface-variant"><span data-en="Solar Pre-cooling &amp; Handling" data-ta="சூரிய ஒளி முன்குளிரூட்டல் &amp; கையாளுதல்">Solar Pre-cooling &amp; Handling</span><span class="font-label-sm text-on-surface font-semibold">₹137.50</span></div><div class="flex justify-between items-center text-secondary"><span data-en="Agri Subsidy Rebate (-30%)" data-ta="விவசாய மானியம் (-30%)">Agri Subsidy Rebate (-30%)</span><span class="font-label-sm text-secondary font-bold">-₹300.00</span></div><div class="flex justify-between items-center text-on-surface-variant"><span data-en="Advance Paid (UPI)" data-ta="முன்பணம் செலுத்தப்பட்டது (UPI)">Advance Paid (UPI)</span><span class="font-label-sm text-primary font-bold">₹362.50</span></div><div class="h-px w-full bg-surface-container"></div><div class="flex justify-between items-center pt-0.5"><div><span class="font-label-md text-label-md text-on-surface font-extrabold block" data-en="Due on Collection" data-ta="மீட்கும் போது செலுத்த வேண்டியது">Due on Collection</span><span class="font-body-sm text-[10px] text-on-surface-variant" data-en="Payable upon collection" data-ta="பொருட்களை எடுக்கும் போது செலுத்தலாம்">Payable upon collection</span></div><div class="text-right"><span class="font-headline-sm text-headline-sm text-primary font-extrabold block">₹725.00</span><span class="font-label-sm text-[10px] text-outline" data-en="Incl. GST" data-ta="GST உட்பட">Incl. GST</span></div></div></div><div class="bg-surface-container-low rounded-lg p-space-sm flex items-center space-x-2.5"><div class="w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-[16px]">verified_user</span></div><div class="min-w-0"><span class="font-label-sm text-[11px] text-on-surface font-bold block truncate" data-en="100% Produce Spoilage Guarantee" data-ta="100% அழுகல் இழப்பீட்டு உத்தரவாதம்">100% Produce Spoilage Guarantee</span><span class="font-body-sm text-[10px] text-on-surface-variant block" data-en="Insured under Policy #TN-ACG-2024 • Zero Risk" data-ta="பாலிசி #TN-ACG-2024 கீழ் காப்பீடு • பூஜ்ஜிய ஆபத்து">Insured under Policy #TN-ACG-2024 • Zero Risk</span></div></div></section>
+<!-- Primary and Secondary Action Button Footer -->
+<section class="w-full space-y-space-sm pt-2">
+<!-- Download Offline Gate Pass Button -->
+<button class="w-full h-13 min-h-[52px] bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center space-x-2 shadow-md active:scale-[0.99] transition-all" id="download-pass-btn" onclick="triggerDownloadAnimation()">
+<span class="material-symbols-outlined text-[22px]">download</span>
+<span data-en="Download Offline Gate Pass (PDF/Image)" data-ta="ஆஃப்லைன் நுழைவுச் சீட்டைப் பதிவிறக்கு (PDF/படம்)">Download Offline Gate Pass (PDF/Image)</span>
+</button>
+<p class="font-body-sm text-[11px] text-center text-on-surface-variant" data-en="Save pass locally to scan without cellular internet" data-ta="ஆஃப்லைன் நுழைவுச் சீட்டைப் பதிவிறக்கவும் (இணையம் இல்லாமலும் இயங்கும்)">Save pass locally to scan without cellular internet</p>
+<!-- Secondary Utility Actions Row -->
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button class="w-full min-h-[48px] bg-surface-container hover:bg-surface-container-high text-primary-container font-label-md text-label-md rounded-xl flex items-center justify-center space-x-1 active:scale-95 transition-all" onclick="openModal('reschedule-modal')">
+<span class="material-symbols-outlined text-[18px]">event_repeat</span>
+<span data-en="Reschedule Slot" data-ta="நேரம் மாற்று">Reschedule Slot</span>
+</button>
+<button class="w-full min-h-[48px] bg-surface-container-low hover:bg-error-container text-error font-label-md text-label-md rounded-xl flex items-center justify-center space-x-1 active:scale-95 transition-all" onclick="openModal('cancel-modal')">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+<span data-en="Cancel Booking" data-ta="முன்பதிவு ரத்து">Cancel Booking</span>
+</button>
+</div>
+</section>
+<!-- Interactive Reschedule Modal (Hidden by default) -->
+<div class="hidden fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-margin" id="reschedule-modal">
+<div class="w-full max-w-sm bg-surface-container-lowest rounded-xl p-space-md shadow-xl space-y-space-md animate-in fade-in slide-in-from-bottom duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary-container">edit_calendar</span>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface" data-en="Reschedule Slot" data-ta="நேரம் மாற்று">Reschedule Slot</h4>
+</div>
+<button class="p-1 rounded-full text-outline hover:bg-surface-container" onclick="closeModal('reschedule-modal')">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-en="Select an alternative intake slot for Uzhavar Solar Hub #14:" data-ta="உழவர் சோலார் மையம் #14-க்கு மாற்று நேரத்தைத் தேர்வு செய்யவும்:">Select an alternative intake slot for Uzhavar Solar Hub #14:</p>
+<div class="space-y-2">
+<label class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low cursor-pointer">
+<div class="flex items-center space-x-2">
+<input checked="" class="w-4 h-4 text-primary" name="reschedule-slot" type="radio"/>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold" data-en="17 Oct • 11:30 AM - 01:00 PM" data-ta="17 அக் • 11:30 மு.ப - 01:00 பி.ப">17 Oct • 11:30 AM - 01:00 PM</span>
+</div>
+<span class="font-label-sm text-[11px] text-secondary font-bold" data-en="Available" data-ta="கிடைக்கிறது">Available</span>
+</label>
+<label class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low cursor-pointer">
+<div class="flex items-center space-x-2">
+<input class="w-4 h-4 text-primary" name="reschedule-slot" type="radio"/>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold" data-en="17 Oct • 03:00 PM - 04:30 PM" data-ta="17 அக் • 03:00 பி.ப - 04:30 பி.ப">17 Oct • 03:00 PM - 04:30 PM</span>
+</div>
+<span class="font-label-sm text-[11px] text-secondary font-bold" data-en="Available" data-ta="கிடைக்கிறது">Available</span>
+</label>
+<label class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low cursor-pointer">
+<div class="flex items-center space-x-2">
+<input class="w-4 h-4 text-primary" name="reschedule-slot" type="radio"/>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold" data-en="18 Oct • 08:30 AM - 10:00 AM" data-ta="18 அக் • 08:30 மு.ப - 10:00 மு.ப">18 Oct • 08:30 AM - 10:00 AM</span>
+</div>
+<span class="font-label-sm text-[11px] text-secondary font-bold" data-en="Available" data-ta="கிடைக்கிறது">Available</span>
+</label>
+</div>
+<div class="flex space-x-2 pt-2">
+<button class="flex-1 py-2.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold" data-en="Keep Slot" data-ta="பழைய நேரம்" onclick="closeModal('reschedule-modal')">Keep Slot</button>
+<button class="flex-1 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold" data-en="Confirm Change" data-ta="உறுதிப்படுத்து" onclick="confirmReschedule()">Confirm Change</button>
+</div>
+</div>
+</div>
+<!-- Interactive Cancellation Modal (Hidden by default) -->
+<div class="hidden fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-margin" id="cancel-modal">
+<div class="w-full max-w-sm bg-surface-container-lowest rounded-xl p-space-md shadow-xl space-y-space-md animate-in fade-in slide-in-from-bottom duration-200">
+<div class="flex items-center space-x-2 text-error">
+<span class="material-symbols-outlined text-[24px]">warning</span>
+<h4 class="font-label-lg text-label-lg font-bold" data-en="Cancel Intake Booking?" data-ta="முன்பதிவை ரத்து செய்யவா?">Cancel Intake Booking?</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-en="Free cancellation is available up to 4 hours before your slot. Advance deposit of ₹362.50 will be refunded to your UPI account within 10 minutes." data-ta="நேரத்திற்கு 4 மணிநேரம் முன்பு வரை இலவச ரத்து சாத்தியம். முன்பணம் ₹362.50 உங்கள் UPI கணக்கிற்கு 10 நிமிடத்தில் திருப்பி அனுப்பப்படும்.">
+        Free cancellation is available up to 4 hours before your slot. Advance deposit of <strong>₹362.50</strong> will be refunded to your UPI account within 10 minutes.
+      </p>
+<div class="flex space-x-2 pt-2">
+<button class="flex-1 py-2.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold" data-en="Go Back" data-ta="திரும்பச் செல்" onclick="closeModal('cancel-modal')">Go Back</button>
+<button class="flex-1 py-2.5 rounded-lg bg-error text-on-error font-label-md text-label-md font-bold" data-en="Yes, Cancel" data-ta="ஆம், ரத்து செய்" onclick="confirmCancel()">Yes, Cancel</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Language Switcher State & Handler
+  let currentLanguage = 'en';
+
+  function toggleLanguage() {
+    currentLanguage = currentLanguage === 'en' ? 'ta' : 'en';
+    applyLanguage(currentLanguage);
+  }
+
+  function applyLanguage(lang) {
+    const pillEn = document.getElementById('pill-en');
+    const pillTa = document.getElementById('pill-ta');
+
+    if (lang === 'en') {
+      pillEn.className = "font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-primary-container text-on-primary font-semibold shadow-xs transition-all";
+      pillTa.className = "font-label-sm text-[11px] px-1.5 py-0.5 text-on-surface-variant font-medium transition-all";
+      document.documentElement.lang = "en";
+    } else {
+      pillTa.className = "font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-primary-container text-on-primary font-semibold shadow-xs transition-all";
+      pillEn.className = "font-label-sm text-[11px] px-1.5 py-0.5 text-on-surface-variant font-medium transition-all";
+      document.documentElement.lang = "ta";
+    }
+
+    const translatableElements = document.querySelectorAll('[data-en][data-ta]');
+    translatableElements.forEach(el => {
+      const translated = el.getAttribute(`data-${lang}`);
+      if (translated) {
+        el.innerHTML = translated;
+      }
+    });
+  }
+
+  // Micro-interaction: Confetti Celebration upon Booking Confirmation Load
+  (function initCelebration() {
+    const canvas = document.getElementById('delight-confetti');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const colors = ['#1E5E3A', '#86F8C2', '#FFB786', '#004625', '#FFDCC6'];
+
+    for (let i = 0; i < 42; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: -10 - Math.random() * 80,
+        r: 3 + Math.random() * 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.random() * 10,
+        tiltAngle: 0,
+        tiltAngleInc: 0.05 + Math.random() * 0.05,
+        speed: 1.5 + Math.random() * 2
+      });
+    }
+
+    let frames = 0;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.tiltAngle += p.tiltAngleInc;
+        p.y += p.speed;
+        p.x += Math.sin(p.tiltAngle) * 1.5;
+
+        ctx.beginPath();
+        ctx.lineWidth = p.r / 2;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+        ctx.stroke();
+      });
+
+      frames++;
+      if (frames < 120) {
+        requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  // Copy booking ID toast notification
+  function showToast() {
+    const toast = document.getElementById('toast-msg');
+    if (toast) {
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2200);
+    }
+  }
+
+  // Modals management
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('hidden');
+  }
+
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  }
+
+  function confirmReschedule() {
+    closeModal('reschedule-modal');
+    alert(currentLanguage === 'ta' ? 'நுழைவு நேரம் மாற்றியமைக்கப்பட்டது. புதிய நுழைவுச் சீட்டு SMS மூலம் அனுப்பப்பட்டது.' : 'Intake slot rescheduled successfully. Updated gate pass sent via SMS.');
+  }
+
+  function confirmCancel() {
+    closeModal('cancel-modal');
+    alert(currentLanguage === 'ta' ? 'முன்பதிவு ரத்து செய்யப்பட்டது. முன்பணம் ₹362.50 UPI கணக்கிற்கு திருப்பி விடப்படும்.' : 'Booking cancelled. Deposit refund of ₹362.50 initiated to UPI.');
+  }
+
+  function triggerDownloadAnimation() {
+    const btn = document.getElementById('download-pass-btn');
+    if (!btn) return;
+    const isTa = currentLanguage === 'ta';
+    const prevHTML = btn.innerHTML;
+    btn.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>${isTa ? 'ஆஃப்லைன் சீட்டு சேமிக்கப்படுகிறது...' : 'Saving Gate Pass Offline...'}</span>`;
+    setTimeout(() => {
+      btn.innerHTML = `<span class="material-symbols-outlined text-[20px]">check_circle</span><span>${isTa ? 'போட்டோ & SMS-ல் சேமிக்கப்பட்டது' : 'Saved to Device Photos & SMS'}</span>`;
+      setTimeout(() => {
+        btn.innerHTML = prevHTML;
+      }, 2500);
+    }, 1200);
+  }
+</script></main><nav aria-label="Primary Farmer Navigation" class="fixed bottom-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-xl pt-1.5 pb-safe shadow-[0_-2px_12px_rgba(0,0,0,0.06)]" data-active-classes="text-primary-container font-bold [&amp;&gt;div&gt;span.material-symbols-outlined]:fill-1 [&amp;&gt;div&gt;span.material-symbols-outlined]:text-primary-container [&amp;&gt;div]:bg-primary-fixed-dim/30"><div class="h-16 max-w-md mx-auto px-1 flex items-center justify-around"><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="farmer-home-and-active-storage-hub" href="farmer-home-and-active-storage-hub"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">home</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="Home" data-ta="இல்லம்">Home</span><span class="font-label-sm text-[9px] text-on-surface-variant/80 font-normal" data-en="Overview" data-ta="முகப்பு">Overview</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="cold-storage-slot-discovery-and-booking" href="cold-storage-slot-discovery-and-booking"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">ac_unit</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="Find Storage" data-ta="கிடங்கு தேடல்">Find Storage</span><span class="font-label-sm text-[9px] text-on-surface-variant/80 font-normal" data-en="Slots" data-ta="இடங்கள்">Slots</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="my-inventory" href="my-inventory"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">inventory_2</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="My Inventory" data-ta="என் இருப்பு">My Inventory</span><span class="font-label-sm text-[9px] text-on-surface-variant/80 font-normal" data-en="Crates" data-ta="பெட்டிகள்">Crates</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="ai-insights" href="ai-insights"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">trending_up</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="AI Insights" data-ta="AI தகவல்">AI Insights</span><span class="font-label-sm text-[9px] text-on-surface-variant/80 font-normal" data-en="Mandi Prices" data-ta="சந்தை விலை">Mandi Prices</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="profile-settings" href="profile-settings"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">person</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="Profile" data-ta="சுயவிவரம்">Profile</span><span class="font-label-sm text-[9px] text-on-surface-variant/80 font-normal" data-en="Account" data-ta="கணக்கு">Account</span></div></a></div></nav>
+</body></html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-fixed-dim": "#94d5a7", "on-secondary": "#ffffff", "surface-container-highest": "#dde4dd", "outline-variant": "#c0c9bf", "on-error-container": "#93000a", "on-background": "#161d18", "on-error": "#ffffff", "primary-container": "#1e5e3a", "on-tertiary": "#ffffff", "surface-bright": "#f4fbf3", "outline": "#707971", "on-primary": "#ffffff", "secondary": "#006c49", "secondary-fixed": "#86f8c2", "on-surface": "#161d18", "on-tertiary-fixed-variant": "#723600", "tertiary-container": "#844000", "background": "#f4fbf3", "on-tertiary-fixed": "#311300", "surface-container-low": "#eef6ed", "surface-dim": "#d5dcd4", "on-secondary-fixed": "#002113", "on-secondary-fixed-variant": "#005236", "on-secondary-container": "#00734e", "primary-fixed": "#aff2c2", "error": "#ba1a1a", "inverse-surface": "#2b322d", "on-primary-fixed": "#00210f", "inverse-on-surface": "#ebf3eb", "on-primary-container": "#94d5a8", "secondary-container": "#86f8c2", "secondary-fixed-dim": "#69dba8", "surface-container-lowest": "#ffffff", "surface-container": "#e9f0e8", "surface": "#f4fbf3", "surface-tint": "#2b6a45", "error-container": "#ffdad6", "surface-container-high": "#e3eae2", "tertiary-fixed": "#ffdcc6", "on-tertiary-container": "#ffb787", "on-surface-variant": "#404941", "inverse-primary": "#94d5a7", "tertiary-fixed-dim": "#ffb786", "tertiary": "#612d00", "surface-variant": "#dde4dd", "on-primary-fixed-variant": "#0d512f", "primary": "#004625" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "space-lg": "1.5rem", "space-xl": "2.25rem", "margin": "1rem", "space-md": "1rem", "gutter-desktop": "1.5rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "gutter": "1rem" }, fontFamily: { "display-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-md": ["Noto Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Noto Sans"], "body-lg": ["Noto Sans"], "label-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"] }, fontSize: { "display-lg": ["3rem", { "lineHeight": "3.5rem", "fontWeight": "700" }], "headline-lg": ["2rem", { "lineHeight": "2.5rem", "fontWeight": "700" }], "label-md": ["0.875rem", { "lineHeight": "1.125rem", "fontWeight": "600" }], "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "fontWeight": "600" }], "body-md": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "600" }], "body-sm": ["0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" }], "label-lg": ["1rem", { "lineHeight": "1.25rem", "fontWeight": "600" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "fontWeight": "600" }], "headline-lg-mobile": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "700" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface flex flex-col min-h-screen selection:bg-secondary-fixed selection:text-on-secondary-fixed"><header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.05)]"><div class="h-20 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="Smart Rural Storage Logo" class="h-9 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1UegikTd_2GHmmlIFMnArdgWjnCxKnn7srQYnFidt1lWNpbg3w0eLIEUyxDAWEHMbXDYbepabYUJbpUDmr4y_0HjZS1LqKI3GK1xHXsH_770wawpGWwcw46b2W81mUi9rZohIr1fnAryLW64IwXtH3q_e7u6c6q5qbkuiSb3TIv-ZKTCI0pHm-bsAlD7xKjBPRiycTm4vpRSLBtL-TEcIO2fW8f8T3ylxRTVLnjCCeRA_zpIK3pan9xtG8"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight truncate font-bold">Smart Rural Storage</span><span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-secondary-container/50 text-on-secondary-container font-label-sm text-[10px] font-bold leading-none"><span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>LIVE HUB</span></div><span class="font-label-sm text-[11px] text-on-surface-variant truncate font-medium" data-en="Post-Harvest Cold Chain Network" data-ta="ஸ்மார்ட் கிராமப்புற சேமிப்பகம்">Post-Harvest Cold Chain Network</span></div></div><div class="flex items-center gap-space-sm flex-shrink-0"><div aria-label="Language selector" class="h-9 p-0.5 bg-surface-container rounded-full flex items-center" id="langSwitchContainer" role="group"><button aria-label="Switch to English" class="h-8 px-2.5 rounded-full bg-primary-container text-on-primary font-label-sm text-[11px] font-bold shadow-xs transition-all flex items-center justify-center" id="btnLangEN" type="button">EN</button><button aria-label="Switch to Tamil" class="h-8 px-2.5 rounded-full text-on-surface-variant font-label-sm text-[11px] font-medium hover:text-on-surface transition-all flex items-center justify-center" id="btnLangTA" type="button">தமிழ்</button></div><button aria-label="Farmer Profile" class="w-9 h-9 rounded-full ring-2 ring-primary-container/20 flex items-center justify-center overflow-hidden" type="button"><img alt="Farmer Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNnZGtf5czjNsSFZ2nrKzb2Rdo07TdqDSolKywsBKmTKy3GR81WEgT4KZnH48fUwBnwogn_s39wKe6_072iD9i61xfwr0FN21UeJLmrD9Ry0t13k2XRQbo4YKa0Mk-nNtwGREbQCddD2bn-YAnIDFN5wa9y_9Go8C0QcFgNT-Tp2m3RiRmzab_ERmiLWzgcSOwXwr5rGP97a4kdU4PMkQwStRfK8m70VvG6GJJlagIP9xaWZFUbyDWBg"/></button></div></div></header><main class="flex flex-col relative w-full pt-20 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-margin pt-space-sm pb-space-lg flex flex-col gap-space-md">
+<!-- 1. Header & Crop/Mandi Selector Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex p-1.5 rounded-lg bg-primary-container text-on-primary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface" data-en="AI Price &amp; Storage Advisory" data-ta="AI விலை &amp; சேமிப்பு ஆலோசனை">AI Price &amp; Storage Advisory</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant" data-en="Predictive Price &amp; Arbitrage Margin" data-ta="விலை கணிப்பு மற்றும் சேமிப்பு லாபம்">Predictive Price &amp; Arbitrage Margin</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span data-en="94% Accuracy" data-ta="94% துல்லியம்">94% Accuracy</span>
+</span>
+</div>
+<!-- Crop & Mandi Selectors Row -->
+<div class="grid grid-cols-2 gap-space-sm mt-1">
+<!-- Crop Selector Button -->
+<button class="flex items-center gap-2.5 p-2.5 rounded-lg bg-surface-container-low text-left active:bg-surface-container transition-colors" id="cropSelectorBtn">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary-container text-[22px]">nutrition</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" data-en="CROP" data-ta="பயிர்">CROP</span>
+<span class="font-label-md text-label-md text-on-surface truncate font-bold" data-en="Tomato (Hybrid)" data-ta="தக்காளி (ஹைப்ரிட்)">Tomato (Hybrid)</span>
+<span class="font-body-sm text-label-sm text-on-surface-variant truncate" data-en="Shivam Variety" data-ta="சிவம் ரகம்">Shivam Variety</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">expand_more</span>
+</button>
+<!-- Mandi Selector Button -->
+<button class="flex items-center gap-2.5 p-2.5 rounded-lg bg-surface-container-low text-left active:bg-surface-container transition-colors" id="mandiSelectorBtn">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container text-[22px]">storefront</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" data-en="MARKET / MANDI" data-ta="சந்தை / மண்டி">MARKET / MANDI</span>
+<span class="font-label-md text-label-md text-on-surface truncate font-bold" data-en="Oddanchatram" data-ta="ஒட்டன்சத்திரம்">Oddanchatram</span>
+<span class="font-body-sm text-label-sm text-on-surface-variant truncate" data-en="&amp; Dindigul Central" data-ta="&amp; திண்டுக்கல் மத்திய சந்தை">&amp; Dindigul Central</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">expand_more</span>
+</button>
+</div>
+<!-- Time Horizon Pill Selector -->
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium" data-en="Forecast Horizon:" data-ta="முன்னறிவிப்பு காலம்:">Forecast Horizon:</span>
+<div class="flex items-center gap-1 bg-surface-container rounded-full p-0.5">
+<button class="px-2.5 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant" data-en="7 Days" data-ta="7 நாட்கள்">7 Days</button>
+<button class="px-2.5 py-1 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm shadow-xs font-semibold" data-en="14 Days" data-ta="14 நாட்கள்">14 Days</button>
+<button class="px-2.5 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant" data-en="30 Days" data-ta="30 நாட்கள்">30 Days</button>
+</div>
+</div>
+</div>
+<!-- 2. Price Arbitrage Calculator (Store vs Sell Now) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
+<!-- Glow decoration -->
+<div class="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-secondary-fixed/40 blur-2xl pointer-events-none"></div>
+<!-- Section Title & Verdict Badge -->
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-en="Arbitrage Profit Calculator" data-ta="சேமிப்பு லாப கணிப்பான்">Arbitrage Profit Calculator</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant" data-en="Analysis: Cold Storage vs. Sell Today" data-ta="ஒப்பீடு: சேமிப்பு vs. இன்று விற்றல்">Analysis: Cold Storage vs. Sell Today</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">recommend</span>
+<span class="font-label-sm text-label-sm font-bold" data-en="Store Recommended" data-ta="சேமிப்பது சிறந்தது">Store Recommended</span>
+</div>
+</div>
+<!-- Comparative Stat Cards -->
+<div class="grid grid-cols-2 gap-space-sm mt-1">
+<!-- Sell Today Card -->
+<div class="p-3 rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant" data-en="Today's Price" data-ta="இன்றைய விலை">Today's Price</span>
+<span class="material-symbols-outlined text-outline text-[18px]">trending_flat</span>
+</div>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md text-on-surface font-bold">₹24<span class="font-label-sm text-label-sm text-on-surface-variant" data-en=" / kg" data-ta=" / கிலோ"> / kg</span></div>
+<span class="font-label-sm text-label-sm text-tertiary-container" data-en="Glut Supply Dip" data-ta="வரத்து அதிகம் (Glut Supply)">Glut Supply Dip</span>
+</div>
+</div>
+<!-- Projected Peak Price -->
+<div class="p-3 rounded-lg bg-secondary-container/40 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-secondary-container font-semibold" data-en="Day 7 Forecast" data-ta="7 நாள் கணிப்பு">Day 7 Forecast</span>
+<span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+</div>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md text-primary font-bold">₹38 - ₹42<span class="font-label-sm text-label-sm text-on-surface-variant" data-en=" / kg" data-ta=" / கிலோ"> / kg</span></div>
+<span class="font-label-sm text-label-sm text-secondary font-bold" data-en="+62% Expected Rise" data-ta="+62% உயர்வின் கணிப்பு">+62% Expected Rise</span>
+</div>
+</div>
+</div>
+<!-- Storage Fee Pill -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[18px]">ac_unit</span>
+<span class="font-body-sm text-body-sm text-on-surface" data-en="Daily Cold Chamber Rental Fee" data-ta="தினசரி குளிர்சாதன கட்டணம்">Daily Cold Chamber Rental Fee</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-bold">₹2.90<span class="font-body-sm text-body-sm text-on-surface-variant font-normal" data-en=" / crate (~₹0.12/kg)" data-ta=" / பெட்டி (~₹0.12/கிலோ)"> / crate (~₹0.12/kg)</span></span>
+</div>
+<!-- Simulation Detail Drawer (for 1,000 kg lot) -->
+<div class="p-3.5 rounded-lg bg-primary-container text-on-primary flex flex-col gap-2.5 mt-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary-fixed-dim uppercase tracking-wider font-semibold" data-en="1,000 KG BATCH SIMULATION" data-ta="1,000 KG உருவகப்படுத்துதல்">1,000 KG BATCH SIMULATION</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed/20 text-primary-fixed font-bold" data-en="7-Day Hold" data-ta="7 நாள் இருப்பு">7-Day Hold</span>
+</div>
+<div class="space-y-1.5 font-body-sm text-body-sm">
+<div class="flex items-center justify-between text-surface-container-highest">
+<span data-en="Sell Today Revenue:" data-ta="இன்று விற்றால் வருமானம்:">Sell Today Revenue:</span>
+<span class="font-medium text-surface-bright">₹24,000</span>
+</div>
+<div class="flex items-center justify-between text-surface-container-highest">
+<span data-en="Sell Day 7 Revenue (@ ₹39 avg):" data-ta="7 நாள் கழித்து விற்றால் (@ ₹39):">Sell Day 7 Revenue (@ ₹39 avg):</span>
+<span class="font-medium text-surface-bright">₹39,000</span>
+</div>
+<div class="flex items-center justify-between text-tertiary-fixed">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">remove_circle_outline</span>
+<span data-en="Cold Storage &amp; Handling Cost:" data-ta="சேமிப்பு மற்றும் கையாளுதல் செலவு:">Cold Storage &amp; Handling Cost:</span>
+</span>
+<span class="font-medium">-₹1,240</span>
+</div>
+</div>
+<div class="pt-2 mt-1 flex items-center justify-between bg-primary/40 -mx-3.5 -mb-3.5 px-3.5 py-2.5 rounded-b-lg">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary-fixed-dim" data-en="Net Additional Profit by Storing" data-ta="சேமிப்பதன் மூலம் கூடுதல் நிகர லாபம்">Net Additional Profit by Storing</span>
+<span class="font-headline-sm text-headline-sm font-bold text-secondary-fixed leading-tight" data-en="+₹13,760 Extra Gain" data-ta="+₹13,760 கூடுதல் லாபம்">+₹13,760 Extra Gain</span>
+</div>
+<a class="h-10 px-3.5 rounded-lg bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md font-bold flex items-center gap-1 shadow-sm active:scale-95 transition-transform" href="cold-storage-slot-discovery-and-booking">
+<span data-en="Book Space" data-ta="இடம் முன்பதிவு">Book Space</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- 3. Historical & Forecast Price Trend Chart -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-en="Price Trend &amp; AI Projection" data-ta="விலை போக்கு &amp; AI கணிப்பு">Price Trend &amp; AI Projection</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant" data-en="Past 7 Days vs. Forecast Next 7 Days" data-ta="கடந்த 7 நாட்கள் vs. அடுத்த 7 நாட்கள்">Past 7 Days vs. Forecast Next 7 Days</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+          ₹24 → ₹39/kg
+        </span>
+</div>
+<!-- Inline SVG Trend Chart -->
+<div class="w-full bg-surface-container-low rounded-lg p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="inline-block w-2.5 h-2.5 rounded-full bg-outline"></span>
+<span data-en="Past 7 Days (Actual)" data-ta="கடந்த 7 நாட்கள் (முடிந்தது)">Past 7 Days (Actual)</span>
+</span>
+<span class="flex items-center gap-1 text-primary-container font-semibold">
+<span class="inline-block w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span data-en="AI Forecast (94% Conf.)" data-ta="AI கணிப்பு (சாத்தியம் 94%)">AI Forecast (94% Conf.)</span>
+</span>
+</div>
+<svg class="w-full h-40 overflow-visible" preserveaspectratio="none" viewbox="0 0 320 140">
+<defs>
+<!-- Gradient for AI Projected Area Confidence Band -->
+<lineargradient id="forecastBand" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#86f8c2" stop-opacity="0.55"></stop>
+<stop offset="100%" stop-color="#86f8c2" stop-opacity="0.05"></stop>
+</lineargradient>
+<!-- Gradient for Past Area -->
+<lineargradient id="pastBand" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#c0c9bf" stop-opacity="0.4"></stop>
+<stop offset="100%" stop-color="#c0c9bf" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Horizontal Grid Lines -->
+<line stroke="#dde4dd" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="320" y1="20" y2="20"></line>
+<text class="font-label-sm text-[10px]" fill="#707971" x="5" y="16">₹40</text>
+<line stroke="#dde4dd" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="320" y1="65" y2="65"></line>
+<text class="font-label-sm text-[10px]" fill="#707971" x="5" y="61">₹30</text>
+<line stroke="#dde4dd" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="320" y1="110" y2="110"></line>
+<text class="font-label-sm text-[10px]" fill="#707971" x="5" y="106">₹20</text>
+<!-- Vertical Divider (Today Marker at x=140) -->
+<line stroke="#1e5e3a" stroke-dasharray="2,2" stroke-width="1.5" x1="140" x2="140" y1="0" y2="130"></line>
+<text class="font-label-sm text-[10px] font-bold" data-en="Today" data-ta="இன்று (Today)" fill="#004625" id="svgTodayLabel" x="144" y="12">Today</text>
+<!-- Past Data Fill (Day -7 to Day 0: 20 -> 140) -->
+<!-- y coords: ₹28=75, ₹27=80, ₹25=90, ₹24=95 -->
+<path d="M 20,75 L 60,80 L 100,90 L 140,95 L 140,125 L 20,125 Z" fill="url(#pastBand)"></path>
+<!-- Past Line -->
+<path d="M 20,75 L 60,80 L 100,90 L 140,95" fill="none" stroke="#707971" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Forecast Confidence Area (Upper: ₹42=18, Lower: ₹37=35 at day 7) -->
+<polygon fill="url(#forecastBand)" points="140,95 180,72 230,48 290,16 290,36 230,64 180,86 140,95"></polygon>
+<!-- Projected Line (₹24 -> ₹28 -> ₹33 -> ₹39) -->
+<path d="M 140,95 L 180,78 L 230,55 L 290,24" fill="none" stroke="#006c49" stroke-dasharray="4,3" stroke-linecap="round" stroke-width="3"></path>
+<!-- Key Data Circles -->
+<!-- Past D-7 -->
+<circle cx="20" cy="75" fill="#707971" r="3.5"></circle>
+<!-- Current D0: ₹24 -->
+<circle cx="140" cy="95" fill="#1e5e3a" r="5"></circle>
+<circle cx="140" cy="95" fill="#ffffff" r="2.5"></circle>
+<text class="font-label-sm text-[11px] font-bold" fill="#161d18" x="115" y="112">₹24</text>
+<!-- Forecast D+3: ₹32 -->
+<circle cx="230" cy="55" fill="#006c49" r="3.5"></circle>
+<!-- Forecast D+7: ₹39 Peak -->
+<circle cx="290" cy="24" fill="#006c49" r="5"></circle>
+<circle cx="290" cy="24" fill="#86f8c2" r="2.5"></circle>
+<text class="font-label-sm text-[11px] font-bold" fill="#004625" x="265" y="18">₹39★</text>
+</svg>
+<!-- Time Axis Labels -->
+<div class="flex justify-between items-center text-on-surface-variant font-label-sm text-[11px] px-1 pt-1">
+<span data-en="-7 Days" data-ta="7 நாள் முன்">-7 Days</span>
+<span data-en="-4 Days" data-ta="4 நாள் முன்">-4 Days</span>
+<span class="font-bold text-primary-container" data-en="Today" data-ta="இன்று (Today)">Today</span>
+<span data-en="+3 Days" data-ta="+3 நாட்கள்">+3 Days</span>
+<span class="font-bold text-secondary" data-en="+7 Days Peak" data-ta="+7 நாள் உச்சி">+7 Days Peak</span>
+</div>
+</div>
+<!-- Data Source Credibility Badge -->
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm px-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary-container">verified</span>
+<span data-en="Govt AGMARKNET &amp; TN-APMC Realtime Feed" data-ta="அரசு அக்மார்க்நெட் &amp; TN-APMC நேரலை புள்ளிவிவரம்">Govt AGMARKNET &amp; TN-APMC Realtime Feed</span>
+</div>
+<span class="font-body-sm text-[11px] text-outline" data-en="Updated: 12m ago" data-ta="புதுப்பிப்பு: 12 நிமிடம் முன்">Updated: 12m ago</span>
+</div>
+</div>
+<!-- 4. AI Crop Storage Advisory -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[22px]">health_and_safety</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-en="Crop Storage Protocols" data-ta="பயிர்ப் பாதுகாப்பு வழிகாட்டல்">Crop Storage Protocols</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant" data-en="Pre-cooling &amp; Chamber Preservation Guidelines" data-ta="குளிர்சாதன சேமிப்பு தரநெறிகள்">Pre-cooling &amp; Chamber Preservation Guidelines</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant font-medium" data-en="Tomato Grade A" data-ta="தக்காளி தரம் A">Tomato Grade A</span>
+</div>
+<div class="grid grid-cols-1 gap-space-sm mt-1">
+<!-- Advisory Item 1: Temperature & Humidity -->
+<div class="flex items-start gap-3 p-3 rounded-lg bg-surface-container-low">
+<div class="w-9 h-9 rounded-lg bg-secondary-container/60 text-on-secondary-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">thermostat</span>
+</div>
+<div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-surface font-bold" data-en="3.0°C – 5.5°C (90–95% RH)" data-ta="3.0°C – 5.5°C (90–95% RH)">3.0°C – 5.5°C (90–95% RH)</span><span class="font-body-sm text-label-sm text-secondary font-medium" data-en="Prevents chilling injury, safeguards firmness up to 14 days." data-ta="குளிர் காயம் இன்றி 14 நாள் வரை பாதுகாக்கும்.">Prevents chilling injury, safeguards firmness up to 14 days.</span></div>
+</div>
+<!-- Advisory Item 2: Ethylene Segregation -->
+<div class="flex items-start gap-3 p-3 rounded-lg bg-tertiary-fixed/30">
+<div class="w-9 h-9 rounded-lg bg-tertiary-fixed text-tertiary-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">warning_amber</span>
+</div>
+<div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-tertiary-fixed-variant font-bold" data-en="Ethylene Isolation Alert" data-ta="எத்திலீன் கவனம் (Ethylene Caution)">Ethylene Isolation Alert</span><span class="font-body-sm text-label-sm text-tertiary font-medium" data-en="Store isolated from ripe bananas, papaya, and mango crates." data-ta="வாழை, பப்பாளி அருகே வைக்க வேண்டாம்.">Store isolated from ripe bananas, papaya, and mango crates.</span></div>
+</div>
+<!-- Advisory Item 3: Ideal Storage Window -->
+<div class="flex items-start gap-3 p-3 rounded-lg bg-surface-container-low">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed text-primary-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">timer</span>
+</div>
+<div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-surface font-bold" data-en="Optimal Storage Window: 8–12 Days" data-ta="உகந்த சேமிப்பு: 8–12 நாட்கள்">Optimal Storage Window: 8–12 Days</span><span class="font-body-sm text-label-sm text-primary-container font-medium" data-en="Peak pulp firmness preserved for premium mandi auction rate." data-ta="பழத்தின் கெட்டித்தன்மை நீடித்து அதிக விலை தரும்.">Peak pulp firmness preserved for premium mandi auction rate.</span></div>
+</div>
+</div>
+</div>
+<!-- 5. Visual Photo Evidence & Field Context -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-bold" data-en="Live Mandi Yard Arrivals &amp; Quality" data-ta="மண்டி வரத்து நேரலை படங்கள்">Live Mandi Yard Arrivals &amp; Quality</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant" data-en="Monitored Crate Inspections &amp; Cold Chambers" data-ta="வரத்து மற்றும் குளிரூட்டல் அறைகள் நேரலை">Monitored Crate Inspections &amp; Cold Chambers</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">photo_camera</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm"><div class="flex flex-col gap-1"><div class="relative w-full h-28 rounded-lg overflow-hidden bg-surface-container"><img class="w-full h-full object-cover" data-alt="Vibrant red harvest tomatoes neatly packed in stackable green plastic agricultural crates at Oddanchatram wholesale vegetable mandi in Tamil Nadu" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFzyv9fzYGMWt3DRVo1DaUogVIdMwCmYrCdZMmPmOgmeJkarKdYbi1uP0No3S0NWfCBkkQGGQmMbT9I11-4R8WoC5uzxnW4o0yBAN88c7dMO1zmu1kbFvm9QYp7plGOgTWvHraX-JQW3nJLKVaTIyXmJcvNfi7qgZ65Ugcv8PI_AXUhKBn6s30sdjXUP4C3qUdDAN-b96IBamNTskeNylD_Nd2H83tfjZ0wDYa3Pbb1mKV5VGgXlwUEQ"/><div class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/90 font-label-sm text-[10px] text-on-surface font-bold">Oddanchatram</div></div><span class="font-label-sm text-[11px] text-on-surface-variant truncate" data-en="Grade-A Produce" data-ta="தரம் A (Grade-A)">Grade-A Produce</span></div><div class="flex flex-col gap-1"><div class="relative w-full h-28 rounded-lg overflow-hidden bg-surface-container"><img class="w-full h-full object-cover" data-alt="Modern rural solar-powered cold storage warehouse chamber interior" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCShDMQHDmJrx_BfmF77_3z3yadtDi3LPp3yVJKq9yeVGYx6znSlrGjg_cgZa6lMknsU8kQ3P7z8Scwk8Y58HE_1ujApRt-t3k-4SRKiB2_tbX9p6PNdYBPmuiWQl4DzvvPjMntmDzzwetzfQsofPl4O4mKG_NfAfz_R001-MATq29Ei8c_SVtZgfk-51y_e1fRKZrwZP1a0UUmj4VjrWeowE2nP-JNTyGMZZMKZ61yjG-PRl2a2XD8kA"/><div class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/90 font-label-sm text-[10px] text-on-secondary-container font-bold">Dindigul Hub</div></div><span class="font-label-sm text-[11px] text-on-surface-variant truncate">4.2°C • 92% RH</span></div></div>
+</div>
+<!-- 6. AI Agricultural Assistant Voice & Chat Pill Bar -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[18px]">record_voice_over</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface font-bold" data-en="Agri AI Voice Assistant" data-ta="விவசாய AI உதவியாளர்">Agri AI Voice Assistant</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-medium" data-en="Online • Bilingual" data-ta="நேரலை • தமிழ் / EN">Online • Bilingual</span>
+</div>
+<!-- Quick Prompt Suggestion Chips -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar"><button class="whitespace-nowrap px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors shrink-0 flex items-center gap-1.5" onclick="fillPrompt(currentLang === 'ta' ? 'வெங்காயம் விலை எப்போது உயரும்?' : 'When will onion prices rise?')"><span class="material-symbols-outlined text-[16px] text-secondary">trending_up</span><span data-en="Onion price forecast?" data-ta="வெங்காய விலை உயர்வு?">Onion price forecast?</span></button><button class="whitespace-nowrap px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors shrink-0 flex items-center gap-1.5" onclick="fillPrompt(currentLang === 'ta' ? 'உருளைக்கிழங்கு குளிர் சேமிப்பு கட்டணம் எவ்வளவு?' : 'Potato cold storage fee in Dindigul')"><span class="material-symbols-outlined text-[16px] text-primary-container">ac_unit</span><span data-en="Potato storage fee?" data-ta="உருளைக்கிழங்கு கட்டணம்?">Potato storage fee?</span></button><button class="whitespace-nowrap px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors shrink-0 flex items-center gap-1.5" onclick="fillPrompt(currentLang === 'ta' ? 'தக்காளிக்கு அருகிலுள்ள சிறந்த மண்டி எது?' : 'Best mandi near Dindigul for Tomato')"><span class="material-symbols-outlined text-[16px] text-tertiary-container">local_shipping</span><span data-en="Nearest profitable mandi?" data-ta="அருகிலுள்ள மண்டி?">Nearest profitable mandi?</span></button></div>
+<!-- Search & Voice Input Box -->
+<div class="relative flex items-center mt-1">
+<div class="w-full h-13 min-h-[52px] bg-surface-container-low rounded-xl px-3.5 flex items-center gap-2 shadow-inner">
+<span class="material-symbols-outlined text-outline text-[22px]">smart_toy</span>
+<input class="w-full bg-transparent text-on-surface placeholder:text-on-surface-variant/70 font-body-md text-body-md focus:outline-none min-w-0" id="aiQueryInput" placeholder="Ask crop prices, mandi forecasts..." type="text"/>
+<button aria-label="Voice Query in English or Tamil" class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 active:scale-95 transition-transform shadow-xs" id="micBtn" type="button">
+<span class="material-symbols-outlined text-[20px]" id="micIcon">mic</span>
+</button>
+</div>
+</div>
+<!-- Quick Hint -->
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-[11px] px-1"><span class="material-symbols-outlined text-[14px] text-secondary">mic</span><span data-en="Tap mic to ask questions in English or Tamil" data-ta="மைக் தொட்டு தமிழில் அல்லது ஆங்கிலத்தில் கேளுங்கள்">Tap mic to ask questions in English or Tamil</span></div>
+</div>
+<!-- Bottom Action CTA: Reserve Storage Slot Direct Link -->
+<div class="flex flex-col gap-2 pt-1 pb-4">
+<a class="w-full h-[52px] rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-md active:bg-primary transition-colors" href="cold-storage-slot-discovery-and-booking">
+<span class="material-symbols-outlined text-[22px]">warehouse</span>
+<span data-en="Reserve Slot at Oddanchatram Cold Chamber" data-ta="ஒட்டன்சத்திரம் குளிர் கிடங்கில் முன்பதிவு செய்க">Reserve Slot at Oddanchatram Cold Chamber</span>
+</a>
+<span class="text-center font-label-sm text-label-sm text-on-surface-variant" data-en="₹2.90 / day rental • 48-Hour Free Cancellation Guaranteed" data-ta="₹2.90 / நாள் வாடகை • 48 மணிநேர கட்டணமில்லா ரத்து சலுகை">₹2.90 / day rental • 48-Hour Free Cancellation Guaranteed</span>
+</div>
+</div>
+</div>
+<script>
+  let currentLang = 'en';
+
+  const placeholdersByLang = {
+    en: "Ask crop prices, mandi forecasts...",
+    ta: "கேளுங்கள் / தக்காளி விலை, சந்தை போக்குகள்..."
+  };
+
+  const listeningTexts = {
+    en: "Listening for your voice query...",
+    ta: "குரலை பதிவு செய்கிறது... (Listening)..."
+  };
+
+  const simulatedResponses = {
+    en: "How much will tomato prices rise next week in Oddanchatram?",
+    ta: "தக்காளி விலை அடுத்த வாரம் எவ்வளவு உயரும்?"
+  };
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    
+    // Update all translatable elements
+    document.querySelectorAll('[data-en]').forEach(el => {
+      if (lang === 'ta' && el.getAttribute('data-ta')) {
+        el.innerHTML = el.getAttribute('data-ta');
+      } else if (lang === 'en' && el.getAttribute('data-en')) {
+        el.innerHTML = el.getAttribute('data-en');
+      }
+    });
+
+    // Update Input placeholder
+    const input = document.getElementById('aiQueryInput');
+    if (input) {
+      input.placeholder = placeholdersByLang[lang];
+    }
+
+    // Toggle button styles in header
+    const btnEN = document.getElementById('btnLangEN');
+    const btnTA = document.getElementById('btnLangTA');
+
+    if (lang === 'en') {
+      btnEN.className = "h-8 px-2.5 rounded-full bg-primary-container text-on-primary font-label-sm text-[11px] font-bold shadow-xs transition-all flex items-center justify-center";
+      btnTA.className = "h-8 px-2.5 rounded-full text-on-surface-variant font-label-sm text-[11px] font-medium hover:text-on-surface transition-all flex items-center justify-center";
+    } else {
+      btnTA.className = "h-8 px-2.5 rounded-full bg-primary-container text-on-primary font-label-sm text-[11px] font-bold shadow-xs transition-all flex items-center justify-center";
+      btnEN.className = "h-8 px-2.5 rounded-full text-on-surface-variant font-label-sm text-[11px] font-medium hover:text-on-surface transition-all flex items-center justify-center";
+    }
+
+    // Update document lang attribute
+    document.documentElement.lang = lang;
+  }
+
+  document.getElementById('btnLangEN')?.addEventListener('click', () => setLanguage('en'));
+  document.getElementById('btnLangTA')?.addEventListener('click', () => setLanguage('ta'));
+
+  // Simple Voice Input & Chip Micro-interactions
+  function fillPrompt(text) {
+    const input = document.getElementById('aiQueryInput');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  }
+
+  const micBtn = document.getElementById('micBtn');
+  const micIcon = document.getElementById('micIcon');
+  let isListening = false;
+
+  if (micBtn && micIcon) {
+    micBtn.addEventListener('click', () => {
+      isListening = !isListening;
+      const input = document.getElementById('aiQueryInput');
+      if (isListening) {
+        micBtn.classList.remove('bg-primary-container');
+        micBtn.classList.add('bg-tertiary-container', 'animate-pulse');
+        micIcon.innerText = 'graphic_eq';
+        if (input) input.placeholder = listeningTexts[currentLang];
+        setTimeout(() => {
+          if (isListening) {
+            isListening = false;
+            micBtn.classList.remove('bg-tertiary-container', 'animate-pulse');
+            micBtn.classList.add('bg-primary-container');
+            micIcon.innerText = 'mic';
+            if (input) {
+              input.value = simulatedResponses[currentLang];
+              input.placeholder = placeholdersByLang[currentLang];
+            }
+          }
+        }, 2800);
+      } else {
+        micBtn.classList.remove('bg-tertiary-container', 'animate-pulse');
+        micBtn.classList.add('bg-primary-container');
+        micIcon.innerText = 'mic';
+        if (input) input.placeholder = placeholdersByLang[currentLang];
+      }
+    });
+  }
+</script></main><nav aria-label="Primary Farmer Navigation" class="fixed bottom-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-xl pt-1.5 pb-safe shadow-[0_-2px_12px_rgba(0,0,0,0.06)]" data-active-classes="text-primary-container font-bold [&amp;&gt;div&gt;span.material-symbols-outlined]:fill-1 [&amp;&gt;div&gt;span.material-symbols-outlined]:text-primary-container [&amp;&gt;div]:bg-primary-fixed-dim/30"><div class="h-16 max-w-md mx-auto px-1 flex items-center justify-around"><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="farmer-home-and-active-storage-hub" href="farmer-home-and-active-storage-hub"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">home</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="Home" data-ta="முகப்பு">Home</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="cold-storage-slot-discovery-and-booking" href="cold-storage-slot-discovery-and-booking"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">ac_unit</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="Find Storage" data-ta="கிடங்கு தேடல்">Find Storage</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="my-inventory" href="my-inventory"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">inventory_2</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="My Inventory" data-ta="என் இருப்பு">My Inventory</span></div></a><a aria-current="page" class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 transition-colors group text-primary-container font-bold [&amp;&gt;div&gt;span.material-symbols-outlined]:fill-1 [&amp;&gt;div&gt;span.material-symbols-outlined]:text-primary-container [&amp;&gt;div]:bg-primary-fixed-dim/30" data-path="ai-insights" href="ai-insights"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">trending_up</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="AI Insights" data-ta="AI தகவல்கள்">AI Insights</span></div></a><a class="flex-1 flex flex-col items-center justify-center min-w-[56px] py-1 text-on-surface-variant transition-colors group" data-path="profile-settings" href="profile-settings"><div class="w-11 h-7 rounded-full flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[22px] transition-transform group-active:scale-95">person</span></div><div class="flex flex-col items-center leading-none mt-0.5"><span class="font-label-sm text-[11px] font-semibold tracking-tight" data-en="Profile" data-ta="சுயவிவரம்">Profile</span></div></a></div></nav>
+</body></html>
