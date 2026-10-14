@@ -1,525 +1,366 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import type { InventoryBatch } from '../types';
+import {
+  Package,
+  CheckCircle2,
+  AlertTriangle,
+  ChevronRight,
+  Plus,
+  Truck,
+  Scale,
+  X,
+  Calendar,
+  Layers
+} from 'lucide-react';
 
 export const FarmerInventoryPage: React.FC = () => {
-  const { batches, movements, performPartialWithdrawal, refreshTelemetry, language, t } = useApp();
+  const { batches, language, showToast, performPartialWithdrawal } = useApp();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<'all' | 'stored' | 'transit' | 'ready'>('all');
-  const [selectedBatchForWithdrawal, setSelectedBatchForWithdrawal] = useState<InventoryBatch | null>(null);
-  const [withdrawKg, setWithdrawKg] = useState<number>(100);
-  const [withdrawReason, setWithdrawReason] = useState<string>('Mandi sales order dispatch');
-  const [selectedTimelineBatch, setSelectedTimelineBatch] = useState<InventoryBatch | null>(null);
 
-  const filteredBatches = batches.filter((b) => {
-    if (filter === 'all') return true;
-    if (filter === 'stored') return b.status === 'in_storage';
-    if (filter === 'transit') return b.status === 'in_transit';
-    if (filter === 'ready') return b.status === 'ready_to_collect' || b.dayTotal - b.dayCurrent <= 6;
-    return true;
-  });
+  const isTa = language === 'ta';
 
-  const totalStoredKg = batches
-    .filter((b) => b.status === 'in_storage')
-    .reduce((sum, b) => sum + b.currentStockKg, 0);
+  const [selectedBatch, setSelectedBatch] = useState<InventoryBatch | null>(null);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawKg, setWithdrawKg] = useState(100);
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [verifiedWeight] = useState(420);
 
-  const totalTransitKg = batches
-    .filter((b) => b.status === 'in_transit')
-    .reduce((sum, b) => sum + b.currentStockKg, 0);
+  // Total summary: 1 hero metric + 2 supporting values
+  const totalKg = batches.reduce((sum, b) => sum + b.currentStockKg, 0);
+  const totalCrates = batches.reduce((sum, b) => sum + b.currentStockCrates, 0);
+  const totalLots = batches.length;
 
-  const handleWithdrawalSubmit = (e: React.FormEvent) => {
+  const handleRequestPickup = (batch: InventoryBatch) => {
+    setSelectedBatch(batch);
+    setShowWithdrawModal(true);
+  };
+
+  const handleConfirmWeight = (batch: InventoryBatch) => {
+    setSelectedBatch(batch);
+    setShowWeightModal(true);
+  };
+
+  const submitPickup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBatchForWithdrawal) return;
-
+    if (!selectedBatch) return;
     const crates = Math.ceil(withdrawKg / 25);
     const success = performPartialWithdrawal(
-      selectedBatchForWithdrawal.batchCode,
+      selectedBatch.batchCode,
       withdrawKg,
       crates,
-      withdrawReason
+      'Farmer request for Mandi dispatch'
     );
     if (success) {
-      setSelectedBatchForWithdrawal(null);
+      setShowWithdrawModal(false);
+      showToast(isTa ? 'மீட்பு கோரிக்கை பதிவு செய்யப்பட்டது!' : 'Pickup request confirmed!', 'success');
     }
   };
 
-  return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
-      <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
-        {/* Sub-header & State sync status */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xl sm:text-2xl font-bold text-[#1e5e3a]">
-                {t('produceInventory')}
-              </h1>
-              <span className="text-xs text-[#404941] font-medium">{t('activeLots')}</span>
-            </div>
-            <p className="text-xs text-[#404941] flex items-center gap-1 mt-0.5">
-              <span className="material-symbols-outlined text-[15px] text-[#006c49]">cloud_done</span>
-              <span>
-                {language === 'ta'
-                  ? 'தமிழ்நாடு வேளாண் கட்டமைப்புடன் இணைக்கப்பட்டது • 2 நிமிடங்களுக்கு முன்'
-                  : 'TN-Agri Grid Synced • 2 mins ago'}
-              </span>
-            </p>
-          </div>
-          <button
-            onClick={refreshTelemetry}
-            aria-label="Refresh Inventory Data"
-            className="w-10 h-10 rounded-full bg-[#e9f0e8] hover:bg-[#e3eae2] flex items-center justify-center text-[#1e5e3a] active:scale-95 transition-transform"
-          >
-            <span className="material-symbols-outlined text-[20px]">sync</span>
-          </button>
-        </div>
+  const submitWeightVerification = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowWeightModal(false);
+    showToast(isTa ? `எடை ${verifiedWeight} கிலோ சரிபார்க்கப்பட்டு பதிவு செய்யப்பட்டது!` : `Weight verified: ${verifiedWeight} kg synced with digital scale!`, 'success');
+  };
 
-        {/* Discrepancy / Attention Alert Banner */}
+  return (
+    <div className="w-full pb-32 text-[#1C2420]">
+      {/* Inventory container: 16px margins */}
+      <div className="px-4 pt-3 space-y-5">
+
+        {/* 1. HERO SUMMARY: 1 Hero Metric + 2 Supporting Values (Declutter rule) */}
+        <section className="card-heritage p-5 space-y-3" aria-label="Inventory Hero Summary">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#5B6660]">
+            {isTa ? 'மொத்த சேமிப்பு இருப்பு' : 'Total stored inventory'}
+          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="font-serif-hero text-[40px] font-bold text-[#0F3D2E] leading-none">
+              {totalKg}
+            </span>
+            <span className="text-base font-bold text-[#5B6660]">kg</span>
+          </div>
+
+          <div className="pt-2 border-t border-[#F7F4EC] grid grid-cols-2 gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <Layers size={16} className="text-[#C8923A]" />
+              <div>
+                <span className="text-[#5B6660] block">{isTa ? 'கூடைகள்' : 'Total Crates'}</span>
+                <span className="font-bold text-[#1C2420]">{totalCrates} {isTa ? 'கூடைகள்' : 'crates'}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Package size={16} className="text-[#14532D]" />
+              <div>
+                <span className="text-[#5B6660] block">{isTa ? 'தொகுதிகள்' : 'Active Batches'}</span>
+                <span className="font-bold text-[#1C2420]">{totalLots} {isTa ? 'தொகுதிகள்' : 'lots'}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Attention notice banner if any batch has capacity conflict or pending intake */}
         <div
           onClick={() => navigate('/capacity-conflict')}
-          className="w-full bg-[#844000]/10 p-3.5 rounded-xl shadow-xs flex items-start gap-2.5 border border-[#ffb786]/60 cursor-pointer hover:bg-[#844000]/15 transition-colors"
+          className="p-3.5 rounded-2xl bg-[#B5472B]/10 border border-[#B5472B]/30 flex items-center justify-between cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full bg-[#844000]/20 flex items-center justify-center flex-shrink-0 text-[#844000] mt-0.5">
-            <span className="material-symbols-outlined text-[18px]">warning</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-[#844000] uppercase tracking-wide">
-                {t('actionNeeded')}
-              </span>
-              <span className="text-xs px-2 py-0.2 rounded-full bg-[#844000] text-[#ffdcc6] font-semibold">
-                {t('pendingCount')}
-              </span>
-            </div>
-            <p className="text-xs text-[#161d18] mt-0.5 font-medium leading-snug truncate">
-              {t('gateVerificationNotice')}
-            </p>
-            <p className="text-[11px] text-[#404941] truncate">{t('uzhavarPalaniHub')}</p>
-          </div>
-          <button className="text-[#844000] p-1 flex-shrink-0">
-            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-          </button>
-        </div>
-
-        {/* Unified Produce Overview Summary Cards (3 Columns) */}
-        <div className="grid grid-cols-3 gap-2 w-full">
-          {/* Active Batches */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-[#dfe4dc] flex flex-col justify-between">
-            <div className="w-7 h-7 rounded-lg bg-[#1e5e3a]/10 flex items-center justify-center text-[#1e5e3a] mb-2">
-              <span className="material-symbols-outlined text-[16px]">layers</span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#B5472B]/15 text-[#B5472B] flex items-center justify-center flex-shrink-0">
+              <AlertTriangle size={18} strokeWidth={2} />
             </div>
             <div>
-              <span className="text-xs text-[#404941] block font-medium">{t('batchesStat')}</span>
-              <span className="text-[10px] text-[#404941]/80 block leading-none">Active Lots</span>
-              <span className="text-lg font-bold text-[#1e5e3a] mt-1 block">{batches.length}</span>
+              <h4 className="text-xs font-bold text-[#B5472B] uppercase tracking-wide">
+                {isTa ? 'நடவடிக்கை தேவை • அறை கொள்ளளவு குறைவு' : 'Action needed • Capacity discrepancy'}
+              </h4>
+              <p className="text-xs text-[#1C2420] font-medium">
+                {isTa ? 'தொகுதி #TN-PLN-014 தீர்வை தேர்வு செய்க' : 'Review resolution for Batch #TN-PLN-014'}
+              </p>
             </div>
           </div>
-
-          {/* Verified Stored */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-[#dfe4dc] flex flex-col justify-between">
-            <div className="w-7 h-7 rounded-lg bg-[#006c49]/10 flex items-center justify-center text-[#006c49] mb-2">
-              <span className="material-symbols-outlined text-[16px]">verified</span>
-            </div>
-            <div>
-              <span className="text-xs text-[#404941] block font-medium">{t('storedStat')}</span>
-              <span className="text-[10px] text-[#404941]/80 block leading-none">Cold Chambers</span>
-              <span className="text-lg font-bold text-[#006c49] mt-1 block">
-                {totalStoredKg.toLocaleString()}
-                <span className="text-xs font-normal text-[#404941] ml-0.5">kg</span>
-              </span>
-            </div>
-          </div>
-
-          {/* In-Transit / Booked */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-[#dfe4dc] flex flex-col justify-between">
-            <div className="w-7 h-7 rounded-lg bg-[#844000]/10 flex items-center justify-center text-[#844000] mb-2">
-              <span className="material-symbols-outlined text-[16px]">local_shipping</span>
-            </div>
-            <div>
-              <span className="text-xs text-[#404941] block font-medium">{t('inTransitStat')}</span>
-              <span className="text-[10px] text-[#404941]/80 block leading-none">En Route</span>
-              <span className="text-lg font-bold text-[#844000] mt-1 block">
-                {totalTransitKg.toLocaleString()}
-                <span className="text-xs font-normal text-[#404941] ml-0.5">kg</span>
-              </span>
-            </div>
-          </div>
+          <ChevronRight size={18} className="text-[#B5472B]" />
         </div>
 
-        {/* Filter Chips with Counter Badges */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors ${
-              filter === 'all'
-                ? 'bg-[#1e5e3a] text-white shadow-xs'
-                : 'bg-[#e9f0e8] text-[#161d18] hover:bg-[#e3eae2]'
-            }`}
-          >
-            <span>{t('allTab')}</span>
-            <span
-              className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ml-0.5 ${
-                filter === 'all' ? 'bg-[#aff2c2] text-[#00210f]' : 'bg-[#dde4dd] text-[#404941]'
-              }`}
-            >
-              {batches.length}
-            </span>
-          </button>
+        {/* 2. INVENTORY LIST ROWS */}
+        <section className="space-y-3" aria-label="Produce Lots">
+          <h2 className="text-base font-bold text-[#1C2420]">
+            {isTa ? 'சேமிப்பு விளைபொருள் விவரம்' : 'Stored produce lots'}
+          </h2>
 
-          <button
-            onClick={() => setFilter('stored')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors ${
-              filter === 'stored'
-                ? 'bg-[#1e5e3a] text-white shadow-xs'
-                : 'bg-[#e9f0e8] text-[#161d18] hover:bg-[#e3eae2]'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[16px] text-[#006c49]">ac_unit</span>
-            <span>{t('inStorageTab')}</span>
-            <span
-              className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
-                filter === 'stored' ? 'bg-[#aff2c2] text-[#00210f]' : 'bg-[#dde4dd] text-[#404941]'
-              }`}
-            >
-              {batches.filter((b) => b.status === 'in_storage').length}
-            </span>
-          </button>
+          <div className="space-y-3">
+            {batches.map((batch) => {
+              const daysLeft = Math.max(0, batch.dayTotal - batch.dayCurrent);
+              const isUrgent = daysLeft <= 3;
 
-          <button
-            onClick={() => setFilter('transit')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors ${
-              filter === 'transit'
-                ? 'bg-[#1e5e3a] text-white shadow-xs'
-                : 'bg-[#e9f0e8] text-[#161d18] hover:bg-[#e3eae2]'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[16px] text-[#844000]">sync_alt</span>
-            <span>{t('inTransitStat')}</span>
-            <span
-              className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
-                filter === 'transit' ? 'bg-[#aff2c2] text-[#00210f]' : 'bg-[#dde4dd] text-[#404941]'
-              }`}
-            >
-              {batches.filter((b) => b.status === 'in_transit').length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setFilter('ready')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors ${
-              filter === 'ready'
-                ? 'bg-[#1e5e3a] text-white shadow-xs'
-                : 'bg-[#e9f0e8] text-[#161d18] hover:bg-[#e3eae2]'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[16px] text-[#1e5e3a]">outbox</span>
-            <span>{t('readyToCollectTab')}</span>
-            <span
-              className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
-                filter === 'ready' ? 'bg-[#aff2c2] text-[#00210f]' : 'bg-[#dde4dd] text-[#404941]'
-              }`}
-            >
-              1
-            </span>
-          </button>
-        </div>
-
-        {/* Produce Batch Stack Cards */}
-        <div className="flex flex-col gap-3.5 w-full">
-          {filteredBatches.map((batch) => {
-            const elapsedPercent = Math.min(100, Math.round((batch.dayCurrent / batch.dayTotal) * 100));
-
-            return (
-              <div
-                key={batch.id}
-                className="bg-white rounded-2xl shadow-sm border border-[#dfe4dc] overflow-hidden"
-              >
-                <div className="p-4 flex flex-col gap-3">
-                  {/* Top row: Crop meta + status tag */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-xl bg-[#e9f0e8] flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <img
-                          className="w-full h-full object-cover"
-                          alt={batch.cropName}
-                          src={batch.cropImageUrl}
-                        />
-                      </div>
-                      <div className="min-w-0">
+              return (
+                <div
+                  key={batch.id}
+                  className="card-heritage p-4 space-y-3"
+                >
+                  {/* Tap row for detail drawer */}
+                  <div
+                    onClick={() => setSelectedBatch(batch)}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Crop thumbnail: 16px rounded real photo */}
+                      <img
+                        src={
+                          batch.cropImageUrl ||
+                          'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=200&q=80'
+                        }
+                        alt={batch.cropName}
+                        className="w-14 h-14 rounded-2xl object-cover shadow-xs flex-shrink-0"
+                      />
+                      <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-base font-bold text-[#161d18] truncate">
-                            {language === 'ta' ? batch.cropNameTa : batch.cropName}
-                          </span>
-                          <span className="text-xs text-[#404941] font-medium">{batch.grade}</span>
+                          <h3 className="text-base font-bold text-[#1C2420]">
+                            {isTa ? batch.cropNameTa : batch.cropName}
+                          </h3>
+                          <span className="text-xs text-[#5B6660]">({batch.batchCode})</span>
                         </div>
-                        <span className="text-xs text-[#006c49] font-mono font-semibold block">
-                          {batch.batchCode}
-                        </span>
+                        {/* Quantity in bold */}
+                        <p className="text-sm font-bold text-[#0F3D2E] mt-0.5">
+                          {batch.currentStockKg} kg <span className="font-normal text-[#5B6660]">• {batch.currentStockCrates} {isTa ? 'கூடைகள்' : 'crates'}</span>
+                        </p>
+                        {/* Days left */}
+                        <div className="flex items-center gap-1 text-xs text-[#5B6660] mt-0.5">
+                          <Calendar size={13} />
+                          <span>
+                            {daysLeft} {isTa ? 'நாட்கள் மீதம்' : 'days left'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full bg-[#86f8c2]/60 text-[#00734e] text-xs font-bold flex items-center gap-1 flex-shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#006c49]"></span>
-                      <span>
-                        Day {batch.dayCurrent}/{batch.dayTotal}
-                      </span>
-                    </span>
-                  </div>
 
-                  {/* Telemetry & Chamber Specs */}
-                  <div className="bg-[#eef6ed] rounded-lg p-2.5 flex items-center justify-between text-[#161d18]">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px] text-[#1e5e3a] flex-shrink-0">
-                        warehouse
-                      </span>
-                      <div className="truncate">
-                        <p className="text-xs font-semibold truncate">{batch.facilityName}</p>
-                        <p className="text-[11px] text-[#404941]">{batch.chamberName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0 pl-2">
-                      <div className="flex items-center gap-1 text-[#1e5e3a] text-xs font-bold bg-white px-2 py-1 rounded-md shadow-2xs">
-                        <span className="material-symbols-outlined text-[13px]">thermostat</span>
-                        {batch.currentTemp}°C
-                      </div>
-                      <div className="flex items-center gap-1 text-[#1e5e3a] text-xs font-bold bg-white px-2 py-1 rounded-md shadow-2xs">
-                        <span className="material-symbols-outlined text-[13px]">humidity_mid</span>
-                        {batch.currentHumidity}%
-                      </div>
+                    {/* Status icon + label */}
+                    <div className="flex flex-col items-end gap-1">
+                      {isUrgent ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#B5472B]/10 text-[#B5472B] text-xs font-semibold">
+                          <AlertTriangle size={13} strokeWidth={2} />
+                          <span>{isTa ? 'விரைவில்' : 'Expiring'}</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E7F5EE] text-[#14532D] text-xs font-semibold">
+                          <CheckCircle2 size={13} strokeWidth={2} />
+                          <span>{isTa ? 'பாதுகாப்பானது' : 'Safe'}</span>
+                        </span>
+                      )}
+                      <ChevronRight size={16} className="text-[#5B6660]" />
                     </div>
                   </div>
 
-                  {/* Weight and Lot stats */}
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <div className="bg-[#e9f0e8]/60 rounded-lg p-2 flex flex-col justify-center">
-                      <span className="text-[11px] text-[#404941]">
-                        {batch.status === 'in_storage' ? 'Verified Intake' : 'Inbound Weight'}
-                      </span>
-                      <div className="flex items-baseline gap-1 mt-0.5">
-                        <span className="text-lg font-bold text-[#1e5e3a]">
-                          {batch.currentStockKg}
-                        </span>
-                        <span className="text-xs text-[#404941]">
-                          kg ({batch.currentStockCrates} crates)
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-[#006c49] font-semibold mt-0.5 flex items-center gap-0.5">
-                        <span className="material-symbols-outlined text-[12px]">check_circle</span>
-                        <span>100% Match</span>
-                      </span>
-                    </div>
-
-                    <div className="bg-[#e9f0e8]/60 rounded-lg p-2 flex flex-col justify-center">
-                      <span className="text-[11px] text-[#404941]">Target Collect</span>
-                      <div className="flex items-baseline gap-1 mt-0.5">
-                        <span className="text-lg font-bold text-[#161d18]">
-                          {batch.targetCollectDate.split('-')[2]} Oct
-                        </span>
-                        <span className="text-xs text-[#404941]">2026</span>
-                      </div>
-                      <span className="text-[10px] text-[#404941] mt-0.5 truncate">
-                        {batch.dayTotal - batch.dayCurrent} Days left
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Storage Shelf-life Visual Progress Bar */}
-                  <div className="w-full flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#404941] font-medium">Optimal Storage Window</span>
-                      <span className="text-[#006c49] font-bold">{elapsedPercent}% Elapsed</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-[#e9f0e8] overflow-hidden">
-                      <div
-                        className="h-full bg-[#006c49] rounded-full transition-all duration-300"
-                        style={{ width: `${elapsedPercent}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  {/* Action Row */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <Link
-                      to="/booking/SRS-TN-8492/confirmation"
-                      className="flex-1 h-11 bg-[#1e5e3a] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#16462b] active:scale-98 transition-all shadow-xs"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
-                      <span>{t('gatePassBtn')}</span>
-                    </Link>
-
+                  {/* Action buttons row: "Request pickup", "Confirm weight" */}
+                  <div className="pt-2 border-t border-[#F7F4EC] grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => setSelectedBatchForWithdrawal(batch)}
-                      className="h-11 px-3 bg-[#e9f0e8] text-[#1e5e3a] rounded-xl text-xs font-bold flex items-center justify-center gap-1 hover:bg-[#e3eae2] active:scale-98 transition-all"
+                      type="button"
+                      onClick={() => handleRequestPickup(batch)}
+                      className="btn-secondary h-11 text-sm flex items-center justify-center gap-1.5"
                     >
-                      <span className="material-symbols-outlined text-[18px]">output</span>
-                      <span>{t('partialWithdrawalBtn')}</span>
+                      <Truck size={16} />
+                      <span>{isTa ? 'மீட்பு கோரிக்கை' : 'Request pickup'}</span>
                     </button>
-
                     <button
-                      onClick={() => setSelectedTimelineBatch(batch)}
-                      className="h-11 px-3 bg-[#e9f0e8] text-[#404941] rounded-xl text-xs font-semibold flex items-center justify-center gap-1 hover:bg-[#e3eae2] active:scale-98 transition-all"
+                      type="button"
+                      onClick={() => handleConfirmWeight(batch)}
+                      className="btn-primary h-11 text-sm flex items-center justify-center gap-1.5"
                     >
-                      <span className="material-symbols-outlined text-[18px]">history</span>
-                      <span>{t('timelineBtn')}</span>
+                      <Scale size={16} />
+                      <span>{isTa ? 'எடை உறுதிசெய்' : 'Confirm weight'}</span>
                     </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </section>
+
       </div>
 
-      {/* Partial Withdrawal Dialog */}
-      {selectedBatchForWithdrawal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-2 border-b border-[#dde4dd]">
+      {/* FLOATING "+" BUTTON FOR ACTIONS */}
+      <button
+        type="button"
+        onClick={() => navigate('/discovery')}
+        className="fixed bottom-24 right-5 z-30 w-14 h-14 rounded-full bg-[#14532D] text-white shadow-[0_8px_24px_rgba(20,83,45,0.4)] flex items-center justify-center active:scale-95 transition-transform cursor-pointer"
+        aria-label="Add Produce Slot"
+      >
+        <Plus size={26} strokeWidth={2.5} />
+      </button>
+
+      {/* Detail Bottom Sheet Drawer */}
+      {selectedBatch && !showWithdrawModal && !showWeightModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="w-full max-w-[390px] bg-white rounded-[24px] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-lg text-[#161d18]">Partial Produce Withdrawal</h3>
-                <p className="text-xs text-[#404941]">
-                  Batch {selectedBatchForWithdrawal.batchCode} • {selectedBatchForWithdrawal.cropName}
-                </p>
+                <h3 className="font-bold text-lg text-[#1C2420]">
+                  {isTa ? selectedBatch.cropNameTa : selectedBatch.cropName}
+                </h3>
+                <span className="text-xs text-[#5B6660]">{selectedBatch.batchCode}</span>
               </div>
               <button
-                onClick={() => setSelectedBatchForWithdrawal(null)}
-                className="text-[#707971] hover:text-[#161d18]"
+                type="button"
+                onClick={() => setSelectedBatch(null)}
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] text-[#5B6660] flex items-center justify-center"
               >
-                <span className="material-symbols-outlined">close</span>
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleWithdrawalSubmit} className="space-y-4">
-              <div className="bg-[#eef6ed] p-3 rounded-xl flex items-center justify-between text-xs">
-                <span>Available Stock:</span>
-                <span className="font-bold text-[#1e5e3a]">
-                  {selectedBatchForWithdrawal.currentStockKg} kg ({selectedBatchForWithdrawal.currentStockCrates} crates)
-                </span>
+            <div className="p-3.5 rounded-2xl bg-[#F7F4EC] space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#5B6660]">{isTa ? 'கிடங்கு மையம்' : 'Cold Hub'}:</span>
+                <span className="font-semibold text-[#1C2420]">{selectedBatch.facilityName}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-[#5B6660]">{isTa ? 'அறை எண்' : 'Chamber'}:</span>
+                <span className="font-semibold text-[#1C2420]">{selectedBatch.chamberName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#5B6660]">{isTa ? 'வெப்பநிலை' : 'Live Temp'}:</span>
+                <span className="font-semibold text-[#14532D]">{selectedBatch.currentTemp}°C</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#5B6660]">{isTa ? 'ஈரப்பதம்' : 'Humidity'}:</span>
+                <span className="font-semibold text-[#1C2420]">{selectedBatch.currentHumidity}%</span>
+              </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#161d18] mb-1">
-                  Withdrawal Quantity (kg)
-                </label>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWithdrawKg((prev) => Math.max(25, prev - 25))}
-                    className="w-12 h-12 rounded-xl bg-[#e9f0e8] text-xl font-bold flex items-center justify-center hover:bg-[#e3eae2]"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    value={withdrawKg}
-                    min={1}
-                    max={selectedBatchForWithdrawal.currentStockKg}
-                    onChange={(e) => setWithdrawKg(Number(e.target.value))}
-                    className="flex-1 h-12 text-center text-lg font-bold border border-[#c0c9bf] rounded-xl focus:border-[#1e5e3a] focus:ring-1 focus:ring-[#1e5e3a] outline-hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setWithdrawKg((prev) =>
-                        Math.min(selectedBatchForWithdrawal.currentStockKg, prev + 25)
-                      )
-                    }
-                    className="w-12 h-12 rounded-xl bg-[#e9f0e8] text-xl font-bold flex items-center justify-center hover:bg-[#e3eae2]"
-                  >
-                    +
-                  </button>
-                </div>
-                <p className="text-[11px] text-[#404941] mt-1">
-                  ~{Math.ceil(withdrawKg / 25)} standard transport crates
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#161d18] mb-1">
-                  Reason for Movement
-                </label>
-                <input
-                  type="text"
-                  value={withdrawReason}
-                  onChange={(e) => setWithdrawReason(e.target.value)}
-                  className="w-full h-11 px-3 text-xs border border-[#c0c9bf] rounded-xl focus:border-[#1e5e3a] outline-hidden"
-                  placeholder="e.g. Dispatched to Oddanchatram wholesale market"
-                  required
-                />
-              </div>
-
-              <div className="pt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedBatchForWithdrawal(null)}
-                  className="flex-1 h-11 bg-[#e9f0e8] rounded-xl font-bold text-xs text-[#161d18] hover:bg-[#e3eae2]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 h-11 bg-[#1e5e3a] text-white rounded-xl font-bold text-xs hover:bg-[#16462b] shadow-xs"
-                >
-                  Confirm &amp; Issue Gate Pass
-                </button>
-              </div>
-            </form>
+            <button
+              type="button"
+              onClick={() => {
+                const code = selectedBatch.batchCode.replace('#', '');
+                setSelectedBatch(null);
+                navigate(`/booking/${code}/confirmation`);
+              }}
+              className="btn-primary w-full"
+            >
+              {isTa ? 'நுழைவுச் சீட்டு காண்க' : 'View digital pass'}
+            </button>
           </div>
         </div>
       )}
 
-      {/* Batch Timeline History Modal */}
-      {selectedTimelineBatch && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-2 border-b border-[#dde4dd]">
+      {/* Pickup Modal */}
+      {showWithdrawModal && selectedBatch && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn">
+          <form onSubmit={submitPickup} className="w-full max-w-[390px] bg-white rounded-[24px] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-lg text-[#161d18]">Batch Movement Ledger</h3>
-                <p className="text-xs text-[#404941]">
-                  Audit trail for {selectedTimelineBatch.batchCode}
-                </p>
+                <h3 className="font-bold text-lg text-[#1C2420]">
+                  {isTa ? 'மீட்பு கோரிக்கை' : 'Request produce pickup'}
+                </h3>
+                <span className="text-xs text-[#5B6660]">{selectedBatch.cropName} • {selectedBatch.batchCode}</span>
               </div>
               <button
-                onClick={() => setSelectedTimelineBatch(null)}
-                className="text-[#707971] hover:text-[#161d18]"
+                type="button"
+                onClick={() => setShowWithdrawModal(false)}
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] text-[#5B6660] flex items-center justify-center"
               >
-                <span className="material-symbols-outlined">close</span>
+                <X size={18} />
               </button>
             </div>
 
-            <div className="space-y-3">
-              {movements
-                .filter((m) => m.batchCode === selectedTimelineBatch.batchCode)
-                .map((mov) => (
-                  <div
-                    key={mov.id}
-                    className="p-3 bg-[#eef6ed] rounded-xl border border-[#dde4dd] text-xs space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold uppercase text-[#006c49]">
-                        {mov.type.replace('_', ' ')}
-                      </span>
-                      <span className="text-[10px] text-[#404941]">
-                        {new Date(mov.timestamp).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="font-bold text-[#161d18]">
-                      {mov.quantityKg} kg ({mov.quantityCrates} crates)
-                    </div>
-                    <p className="text-[#404941]">{mov.reason}</p>
-                    <div className="text-[10px] text-gray-500 font-mono">
-                      Ref: {mov.receiptNumber} • Auth: {mov.authorizedBy}
-                    </div>
-                  </div>
-                ))}
+            <div>
+              <label className="text-xs font-semibold text-[#5B6660] block mb-1">
+                {isTa ? 'எடுத்துச்செல்லும் எடை (கிலோ)' : 'Withdrawal weight (kg)'}
+              </label>
+              <input
+                type="number"
+                min="25"
+                max={selectedBatch.currentStockKg}
+                step="25"
+                value={withdrawKg}
+                onChange={(e) => setWithdrawKg(Number(e.target.value))}
+                className="w-full h-12 px-4 rounded-xl border border-[#0F3D2E]/20 text-lg font-bold text-[#1C2420] focus:outline-none"
+              />
+              <span className="text-[11px] text-[#5B6660] mt-1 block">
+                {isTa ? `மீதம் உள்ள இருப்பு: ${selectedBatch.currentStockKg} கிலோ` : `Max available: ${selectedBatch.currentStockKg} kg`}
+              </span>
             </div>
 
-            <button
-              onClick={() => setSelectedTimelineBatch(null)}
-              className="w-full h-11 bg-[#1e5e3a] text-white rounded-xl font-bold text-xs hover:bg-[#16462b]"
-            >
-              Done
+            <button type="submit" className="btn-primary w-full">
+              {isTa ? 'கோரிக்கையை உறுதிசெய்' : 'Request pickup'}
             </button>
-          </div>
+          </form>
+        </div>
+      )}
+
+      {/* Weight Verification Modal */}
+      {showWeightModal && selectedBatch && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn">
+          <form onSubmit={submitWeightVerification} className="w-full max-w-[390px] bg-white rounded-[24px] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-[#1C2420]">
+                  {isTa ? 'எடை சரிபார்ப்பு' : 'Confirm digital weight'}
+                </h3>
+                <span className="text-xs text-[#5B6660]">{selectedBatch.cropName} • {selectedBatch.batchCode}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWeightModal(false)}
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] text-[#5B6660] flex items-center justify-center"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#E7F5EE] text-center space-y-1">
+              <span className="text-xs text-[#5B6660] font-medium">
+                {isTa ? 'வாயில் எடை மேடை அளவீடு' : 'Gate weighing bridge reading'}
+              </span>
+              <div className="font-serif-hero text-3xl font-bold text-[#14532D]">
+                {verifiedWeight} kg
+              </div>
+              <span className="text-[11px] text-[#14532D] font-semibold">
+                {isTa ? 'டிஜிட்டல் முத்திரையிடப்பட்டது' : 'Digital scale verified'}
+              </span>
+            </div>
+
+            <button type="submit" className="btn-primary w-full">
+              {isTa ? 'எடையை உறுதிசெய்' : 'Confirm weight'}
+            </button>
+          </form>
         </div>
       )}
     </div>

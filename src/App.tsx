@@ -20,18 +20,22 @@ import { OwnerDashboardPage } from './pages/OwnerDashboardPage';
 import { CentralInventoryPage } from './pages/CentralInventoryPage';
 import { ActivityAlertsPage } from './pages/ActivityAlertsPage';
 import { ProfileSettingsPage } from './pages/ProfileSettingsPage';
+import { StyleGuidePage } from './pages/StyleGuidePage';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const hideChrome = location.pathname === '/service-selection';
+  const hideChrome = location.pathname === '/service-selection' || location.pathname === '/welcome';
+  const pageRendersOwnHeader = location.pathname === '/capacity-conflict';
 
   return (
-    <>
-      <ToastContainer />
-      {!hideChrome && <Header />}
-      <main className="min-h-screen">{children}</main>
-      {!hideChrome && <BottomNav />}
-    </>
+    <div className="min-h-screen bg-[#EDE8DE] sm:py-4 flex justify-center items-start antialiased selection:bg-[#C8923A]/30">
+      <div className="mobile-viewport relative flex flex-col min-h-screen bg-[#F7F4EC] shadow-[0_16px_48px_rgba(15,61,46,0.16)] sm:rounded-[36px] overflow-hidden">
+        <ToastContainer />
+        {!hideChrome && !pageRendersOwnHeader && <Header />}
+        <main className="flex-1 w-full">{children}</main>
+        {!hideChrome && <BottomNav />}
+      </div>
+    </div>
   );
 };
 
@@ -42,6 +46,7 @@ export function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<FarmerHomePage />} />
+            <Route path="/welcome" element={<ServiceSelectionPage />} />
             <Route path="/service-selection" element={<ServiceSelectionPage />} />
             <Route path="/farmer/home" element={<FarmerHomePage />} />
             <Route path="/discovery" element={<DiscoveryPage />} />
@@ -57,6 +62,7 @@ export function App() {
             <Route path="/central/inventory" element={<CentralInventoryPage />} />
             <Route path="/activity" element={<ActivityAlertsPage />} />
             <Route path="/profile" element={<ProfileSettingsPage />} />
+            <Route path="/style-guide" element={<StyleGuidePage />} />
             <Route path="*" element={<Navigate to="/farmer/home" replace />} />
           </Routes>
         </Layout>

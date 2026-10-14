@@ -1,266 +1,250 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Search, MapPin, Zap, Calculator, X, Volume2 } from 'lucide-react';
 
 export const DiscoveryPage: React.FC = () => {
-  const { facilities, language } = useApp();
-  const [searchParams] = useSearchParams();
-  const initialView = searchParams.get('view') === 'map' ? 'map' : 'list';
+  const { facilities, language, createBooking, showToast } = useApp();
+  const navigate = useNavigate();
+
+  const isTa = language === 'ta';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCrop, setSelectedCrop] = useState<string>('all');
-  const [solarOnly, setSolarOnly] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>(initialView);
-  const [selectedPinFacility, setSelectedPinFacility] = useState<string | null>(facilities[0].id);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'solar' | 'nearby'>('all');
+  const [selectedFacilityForEst, setSelectedFacilityForEst] = useState<(typeof facilities)[0] | null>(null);
 
-  const crops = ['all', 'Tomato', 'Potato', 'Onion', 'Chillies', 'Banana'];
+  // Estimator state for bottom sheet
+  const [estCrates, setEstCrates] = useState(25);
+  const [estDays, setEstDays] = useState(7);
+  const [estCrop] = useState('Tomato');
 
+  // Filter list with max 3 chips
   const filteredFacilities = facilities.filter((fac) => {
-    const matchesSearch =
+    const matchesQuery =
       fac.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       fac.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
       fac.district.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCrop =
-      selectedCrop === 'all' ||
-      fac.supportedCrops.some((c) => c.toLowerCase().includes(selectedCrop.toLowerCase()));
-
-    const matchesSolar = !solarOnly || fac.solarPowered;
-
-    return matchesSearch && matchesCrop && matchesSolar;
+    if (!matchesQuery) return false;
+    if (activeFilter === 'solar') return fac.solarPowered;
+    if (activeFilter === 'nearby') return fac.distanceKm <= 5.0;
+    return true;
   });
 
+  const handleBookDirect = (facilityId: string) => {
+    navigate(`/wizard?facility=${facilityId}`);
+  };
+
+  const handleOpenEstimator = (facility: (typeof facilities)[0]) => {
+    setSelectedFacilityForEst(facility);
+  };
+
+  const handleConfirmReservation = () => {
+    if (!selectedFacilityForEst) return;
+    const chamber = selectedFacilityForEst.chambers[0];
+    const rate = selectedFacilityForEst.pricePerCrateDay || 2.8;
+    const totalCost = estCrates * rate * estDays;
+
+    createBooking({
+      farmerId: 'far-1',
+      farmerName: 'Murugan S.',
+      farmerPhone: '+91 98421 77301',
+      facilityId: selectedFacilityForEst.id,
+      facilityName: selectedFacilityForEst.name,
+      chamberId: chamber?.id || 'cham-1',
+      chamberName: chamber?.name || 'Solar Chamber 1',
+      cropName: estCrop,
+      cropNameTa: isTa ? 'தக்காளி' : 'Tomato',
+      variety: 'Shivam Hybrid',
+      grade: 'Grade A',
+      cropImageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=400&q=80',
+      bookedKg: estCrates * 25,
+      bookedCrates: estCrates,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + estDays * 86400000).toISOString().split('T')[0],
+      durationDays: estDays,
+      dailyRateCrate: rate,
+      totalEstimatedCost: Math.round(totalCost),
+    });
+
+    const bookingCode = '#SRS-TN-7721';
+    setSelectedFacilityForEst(null);
+    navigate(`/booking/${bookingCode.replace('#', '')}/confirmation`);
+  };
+
   return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
-      <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
-        {/* Search & Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#1e5e3a]">Find Cold Storage</h1>
-            <p className="text-xs text-[#404941]">Oddanchatram, Dindigul &amp; Palani Agro Cluster</p>
-          </div>
+    <div className="w-full pb-28 text-[#1C2420]">
+      {/* Search and facility cards container */}
+      <div className="px-4 pt-3 space-y-5">
 
-          {/* List / Map View Toggle */}
-          <div className="flex items-center bg-[#e9f0e8] p-1 rounded-full border border-[#c0c9bf]/30">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${
-                viewMode === 'list' ? 'bg-[#1e5e3a] text-white shadow-xs' : 'text-[#404941]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">view_list</span>
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`p-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${
-                viewMode === 'map' ? 'bg-[#1e5e3a] text-white shadow-xs' : 'text-[#404941]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">map</span>
-            </button>
+        {/* 1. Search Bar with Voice Assist affordance */}
+        <div className="card-heritage p-2.5 flex items-center gap-2">
+          <div className="w-9 h-9 rounded-full bg-[#0F3D2E]/10 flex items-center justify-center text-[#0F3D2E] flex-shrink-0">
+            <Search size={18} strokeWidth={2} />
           </div>
-        </div>
-
-        {/* Search Input */}
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3.5 top-3 text-[#707971] text-[20px]">
-            search
-          </span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search facility name, village, or town..."
-            className="w-full h-12 pl-11 pr-4 bg-white rounded-xl border border-[#c0c9bf] text-xs font-medium focus:border-[#1e5e3a] focus:ring-1 focus:ring-[#1e5e3a] outline-hidden shadow-2xs"
+            placeholder={isTa ? 'கிராமம் அல்லது கிடங்கு பெயர்...' : 'Search village or cold storage...'}
+            className="flex-1 bg-transparent text-sm font-medium text-[#1C2420] placeholder-[#5B6660] focus:outline-none"
           />
-        </div>
-
-        {/* Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {crops.map((crop) => (
-            <button
-              key={crop}
-              onClick={() => setSelectedCrop(crop)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex-shrink-0 transition-colors ${
-                selectedCrop === crop
-                  ? 'bg-[#1e5e3a] text-white shadow-xs'
-                  : 'bg-[#e9f0e8] text-[#404941] hover:bg-[#e3eae2]'
-              }`}
-            >
-              {crop === 'all' ? 'All Crops' : crop}
-            </button>
-          ))}
-
           <button
-            onClick={() => setSolarOnly(!solarOnly)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold flex-shrink-0 flex items-center gap-1 border transition-colors ${
-              solarOnly
-                ? 'bg-[#86f8c2] text-[#00210f] border-[#006c49]'
-                : 'bg-white text-[#404941] border-[#c0c9bf]/60'
-            }`}
+            type="button"
+            onClick={() => showToast(isTa ? 'குரல் தேடல் இயக்கப்பட்டது. பேசுங்கள்...' : 'Voice search active. Speak now...', 'info')}
+            className="w-9 h-9 rounded-full bg-[#F7F4EC] text-[#5B6660] hover:text-[#0F3D2E] flex items-center justify-center flex-shrink-0"
+            aria-label="Voice search"
           >
-            <span className="material-symbols-outlined text-[15px]">solar_power</span>
-            <span>Solar Powered</span>
+            <Volume2 size={18} />
           </button>
         </div>
 
-        {/* Map View */}
-        {viewMode === 'map' && (
-          <div className="bg-white rounded-2xl p-4 border border-[#dfe4dc] shadow-sm space-y-3">
-            <div className="relative h-64 bg-[#eef6ed] rounded-xl overflow-hidden border border-[#dde4dd] flex items-center justify-center">
-              {/* Illustrated Regional GIS Map */}
-              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#1e5e3a_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        {/* 2. Filter Chips (Max 3 as per Declutter Rules) */}
+        <div className="flex items-center gap-2">
+          {/* Chip 1: All */}
+          <button
+            type="button"
+            onClick={() => setActiveFilter('all')}
+            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              activeFilter === 'all'
+                ? 'bg-[#14532D] text-white shadow-xs'
+                : 'bg-white text-[#5B6660] border border-[#0F3D2E]/10 hover:bg-[#F7F4EC]'
+            }`}
+          >
+            {isTa ? 'அனைத்தும்' : 'All hubs'}
+          </button>
 
-              {/* Road lines */}
-              <svg className="absolute inset-0 w-full h-full text-emerald-300 stroke-current" strokeWidth="2">
-                <line x1="20" y1="50" x2="180" y2="120" />
-                <line x1="180" y1="120" x2="350" y2="90" />
-                <line x1="180" y1="120" x2="220" y2="220" />
-              </svg>
+          {/* Chip 2: Solar */}
+          <button
+            type="button"
+            onClick={() => setActiveFilter('solar')}
+            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeFilter === 'solar'
+                ? 'bg-[#14532D] text-white shadow-xs'
+                : 'bg-white text-[#5B6660] border border-[#0F3D2E]/10 hover:bg-[#F7F4EC]'
+            }`}
+          >
+            <Zap size={14} className={activeFilter === 'solar' ? 'text-[#C8923A]' : 'text-[#5B6660]'} />
+            <span>{isTa ? 'சூரிய மின்சாரம்' : 'Solar powered'}</span>
+          </button>
 
-              {/* Facility Markers */}
-              {filteredFacilities.map((fac, idx) => (
-                <button
-                  key={fac.id}
-                  onClick={() => setSelectedPinFacility(fac.id)}
-                  style={{ top: `${35 + idx * 25}%`, left: `${25 + idx * 30}%` }}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 p-1.5 rounded-full shadow-md transition-all ${
-                    selectedPinFacility === fac.id
-                      ? 'bg-[#1e5e3a] text-white scale-125 z-10 ring-4 ring-[#86f8c2]'
-                      : 'bg-white text-[#1e5e3a] hover:scale-110'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px]">warehouse</span>
-                </button>
-              ))}
+          {/* Chip 3: < 5 km Nearby */}
+          <button
+            type="button"
+            onClick={() => setActiveFilter('nearby')}
+            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeFilter === 'nearby'
+                ? 'bg-[#14532D] text-white shadow-xs'
+                : 'bg-white text-[#5B6660] border border-[#0F3D2E]/10 hover:bg-[#F7F4EC]'
+            }`}
+          >
+            <MapPin size={14} />
+            <span>&lt; 5 km</span>
+          </button>
+        </div>
 
-              <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-[#1e5e3a]">
-                Dindigul APMC Agri Corridor GIS
-              </div>
-            </div>
-
-            {/* Selected Map Card */}
-            {selectedPinFacility && (() => {
-              const fac = facilities.find((f) => f.id === selectedPinFacility);
-              if (!fac) return null;
-              return (
-                <div className="p-3 bg-[#eef6ed] rounded-xl flex items-center justify-between gap-3 border border-[#dde4dd]">
-                  <div>
-                    <h4 className="text-xs font-bold text-[#161d18]">{fac.name}</h4>
-                    <p className="text-[11px] text-[#404941]">{fac.location} • {fac.distanceKm} km away</p>
-                    <span className="text-[10px] font-bold text-[#006c49]">₹{fac.pricePerCrateDay}/crate/day</span>
-                  </div>
-                  <Link
-                    to={`/facility/${fac.id}`}
-                    className="px-3 py-1.5 bg-[#1e5e3a] text-white rounded-lg text-xs font-bold shadow-xs hover:bg-[#16462b]"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* List of Facilities */}
-        <div className="space-y-3">
+        {/* 3. Facility Photo Cards */}
+        <div className="space-y-4">
           {filteredFacilities.map((facility) => {
-            const availableCrates = facility.chambers.reduce(
-              (acc, c) => acc + c.availableCapacityCrates,
-              0
-            );
+            const chamber = facility.chambers[0];
+            const price = facility.pricePerCrateDay || 2.8;
+            const availableCrates = chamber?.availableCapacityCrates || 240;
+            const totalCrates = chamber?.totalCapacityCrates || 600;
+            const availablePercent = Math.round((availableCrates / totalCrates) * 100);
 
             return (
               <div
                 key={facility.id}
-                className="bg-white rounded-2xl shadow-sm border border-[#dfe4dc] overflow-hidden hover:shadow-md transition-shadow"
+                className="card-heritage overflow-hidden flex flex-col justify-between"
               >
-                <div className="relative h-36 w-full overflow-hidden">
+                {/* Real Chamber Photography with soft dark gradient overlay for text */}
+                <div className="relative h-44 w-full overflow-hidden">
                   <img
-                    src={facility.imageUrl}
+                    src={
+                      facility.imageUrl ||
+                      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80'
+                    }
                     alt={facility.name}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-3 left-3 flex gap-1.5">
-                    {facility.verified && (
-                      <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs text-[#006c49] text-[10px] font-bold flex items-center gap-1 shadow-2xs">
-                        <span className="material-symbols-outlined text-[13px]">verified</span>
-                        TN-Agri Verified
-                      </span>
-                    )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+                  {/* Overlaid Badges: Max 2 badges per card rule */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
                     {facility.solarPowered && (
-                      <span className="px-2 py-0.5 rounded-full bg-[#aff2c2] text-[#00210f] text-[10px] font-bold flex items-center gap-1 shadow-2xs">
-                        <span className="material-symbols-outlined text-[13px]">solar_power</span>
-                        Solar Backup
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#14532D]/90 text-white text-[11px] font-bold backdrop-blur-md">
+                        <Zap size={12} className="text-[#C8923A]" />
+                        <span>{isTa ? 'சூரிய மின்' : 'Solar 100%'}</span>
                       </span>
                     )}
                   </div>
-                  <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-xs px-2.5 py-1 rounded-lg text-white text-xs font-bold">
-                    ★ {facility.rating} ({facility.reviewCount})
+
+                  {/* Facility Name & Distance over photo */}
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <h3 className="text-lg font-bold text-[#F7F4EC] leading-tight drop-shadow-xs">
+                      {isTa ? facility.nameTa : facility.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-xs text-white/80 mt-1">
+                      <MapPin size={13} className="text-[#C8923A]" />
+                      <span>{facility.location} • {facility.distanceKm} km</span>
+                    </div>
                   </div>
                 </div>
 
+                {/* Card Body */}
                 <div className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
+                  {/* Price per day in gold serif */}
+                  <div className="flex items-baseline justify-between">
                     <div>
-                      <h3 className="text-base font-bold text-[#161d18]">
-                        {language === 'ta' ? facility.nameTa : facility.name}
-                      </h3>
-                      <p className="text-xs text-[#404941]">
-                        {facility.location} • <span className="font-semibold text-[#1e5e3a]">{facility.distanceKm} km away</span>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-base font-extrabold text-[#1e5e3a]">
-                        ₹{facility.pricePerCrateDay}
+                      <span className="text-[11px] text-[#5B6660] uppercase tracking-wider font-semibold block">
+                        {isTa ? 'கட்டணம் / கூடை' : 'Daily rate per crate'}
                       </span>
-                      <span className="text-[10px] text-[#404941] block">/ crate / day</span>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span className="font-serif-hero text-[28px] font-bold text-[#C8923A] leading-none">
+                          ₹{price.toFixed(2)}
+                        </span>
+                        <span className="text-xs text-[#5B6660] font-semibold">
+                          {isTa ? '/ நாள்' : '/ day'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Chamber availability strip */}
-                  <div className="bg-[#eef6ed] rounded-xl p-2.5 flex items-center justify-between text-xs border border-[#dde4dd]">
-                    <div className="flex items-center gap-1.5 text-[#006c49] font-bold">
-                      <span className="material-symbols-outlined text-[16px]">shelves</span>
-                      <span>{availableCrates} Crates Available</span>
-                    </div>
-                    <span className="text-[10px] text-[#404941]">
-                      Updated {facility.lastUpdatedMinutesAgo} mins ago
-                    </span>
-                  </div>
-
-                  {/* Supported crops tags */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {facility.supportedCrops.slice(0, 3).map((crop) => (
-                      <span
-                        key={crop}
-                        className="px-2 py-0.5 rounded-md bg-[#e9f0e8] text-[#404941] text-[10px] font-medium"
-                      >
-                        {crop}
-                      </span>
-                    ))}
-                    {facility.supportedCrops.length > 3 && (
-                      <span className="text-[10px] text-gray-500 font-semibold">
-                        +{facility.supportedCrops.length - 3} more
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-[#dde4dd]">
-                    <Link
-                      to={`/facility/${facility.id}`}
-                      className="flex-1 h-11 rounded-xl bg-[#e9f0e8] text-[#1e5e3a] text-xs font-bold flex items-center justify-center hover:bg-[#e3eae2] transition-colors"
+                    {/* Estimate Cost text link affordance */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEstimator(facility)}
+                      className="text-xs font-semibold text-[#14532D] flex items-center gap-1 hover:underline cursor-pointer"
                     >
-                      Facility Details
-                    </Link>
-                    <Link
-                      to={`/wizard?facilityId=${facility.id}`}
-                      className="flex-1 h-11 rounded-xl bg-[#1e5e3a] text-white text-xs font-bold flex items-center justify-center gap-1 hover:bg-[#16462b] shadow-xs transition-colors"
+                      <Calculator size={14} />
+                      <span>{isTa ? 'கட்டணக் கணக்கீடு' : 'Estimate cost'}</span>
+                    </button>
+                  </div>
+
+                  {/* Availability: Slim 8px progress bar with value label */}
+                  <div>
+                    <div className="flex items-center justify-between text-xs text-[#5B6660] mb-1.5 font-medium">
+                      <span>{isTa ? 'கிடைக்கும் இடம்' : 'Chamber capacity'}</span>
+                      <span className="font-bold text-[#1C2420]">
+                        {availableCrates} {isTa ? 'கூடைகள் மீதம்' : 'crates left'}
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-[#F7F4EC] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#14532D] rounded-full transition-all duration-300"
+                        style={{ width: `${availablePercent}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* One Primary "Book slot" Button */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleBookDirect(facility.id)}
+                      className="btn-primary w-full"
                     >
-                      <span>Book Space</span>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </Link>
+                      {isTa ? 'இடத்தை முன்பதிவு செய்' : 'Book slot'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -268,6 +252,106 @@ export const DiscoveryPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* "Estimate Cost" Bottom Sheet */}
+      {selectedFacilityForEst && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="w-full max-w-[390px] bg-white rounded-[24px] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-[#1C2420]">
+                  {isTa ? 'கட்டண மதிப்பீடு' : 'Estimate storage cost'}
+                </h3>
+                <p className="text-xs text-[#5B6660]">{selectedFacilityForEst.name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedFacilityForEst(null)}
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] text-[#5B6660] flex items-center justify-center"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Inputs: Crates and Days */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-[#5B6660] block mb-1">
+                  {isTa ? 'கூடைகளின் எண்ணிக்கை' : 'Number of crates'}
+                </label>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-[#F7F4EC]">
+                  <button
+                    type="button"
+                    onClick={() => setEstCrates(Math.max(5, estCrates - 5))}
+                    className="w-9 h-9 rounded-lg bg-white font-bold text-lg text-[#0F3D2E] shadow-xs"
+                  >
+                    -
+                  </button>
+                  <span className="font-serif-hero text-xl font-bold text-[#1C2420]">
+                    {estCrates} {isTa ? 'கூடை' : 'crates'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setEstCrates(estCrates + 5)}
+                    className="w-9 h-9 rounded-lg bg-white font-bold text-lg text-[#0F3D2E] shadow-xs"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[#5B6660] block mb-1">
+                  {isTa ? 'சேமிப்பு நாட்கள்' : 'Storage duration'}
+                </label>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-[#F7F4EC]">
+                  <button
+                    type="button"
+                    onClick={() => setEstDays(Math.max(1, estDays - 1))}
+                    className="w-9 h-9 rounded-lg bg-white font-bold text-lg text-[#0F3D2E] shadow-xs"
+                  >
+                    -
+                  </button>
+                  <span className="font-serif-hero text-xl font-bold text-[#1C2420]">
+                    {estDays} {isTa ? 'நாட்கள்' : 'days'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setEstDays(estDays + 1)}
+                    className="w-9 h-9 rounded-lg bg-white font-bold text-lg text-[#0F3D2E] shadow-xs"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Total Calculation */}
+              <div className="p-3.5 rounded-2xl bg-[#E7F5EE] flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-[#5B6660] font-medium block">
+                    {isTa ? 'மதிப்பிடப்பட்ட மொத்தக் கட்டணம்' : 'Estimated total cost'}
+                  </span>
+                  <span className="font-serif-hero text-2xl font-bold text-[#14532D]">
+                    ₹{Math.round(estCrates * (selectedFacilityForEst.pricePerCrateDay || 2.8) * estDays)}
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#14532D] font-semibold bg-white/70 px-2.5 py-1 rounded-full">
+                  {isTa ? 'சூரிய மின் காப்பீடுடன்' : 'Incl. Solar Backup'}
+                </span>
+              </div>
+            </div>
+
+            {/* Reserve Slot Button */}
+            <button
+              type="button"
+              onClick={handleConfirmReservation}
+              className="btn-primary w-full"
+            >
+              {isTa ? 'இடத்தை முன்பதிவு செய்' : 'Reserve slot'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

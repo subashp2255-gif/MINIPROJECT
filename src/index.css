@@ -2,47 +2,18 @@
 
 @layer base {
   :root {
-    --color-primary: #1e5e3a;
-    --color-primary-container: #1e5e3a;
-    --color-primary-fixed: #aff2c2;
-    --color-primary-fixed-dim: #94d5a7;
-    --color-on-primary: #ffffff;
-    --color-on-primary-container: #94d5a8;
-
-    --color-secondary: #006c49;
-    --color-secondary-container: #86f8c2;
-    --color-secondary-fixed: #86f8c2;
-    --color-secondary-fixed-dim: #69dba8;
-    --color-on-secondary: #ffffff;
-    --color-on-secondary-container: #00734e;
-
-    --color-tertiary: #612d00;
-    --color-tertiary-container: #844000;
-    --color-tertiary-fixed: #ffdcc6;
-    --color-tertiary-fixed-dim: #ffb786;
-    --color-on-tertiary: #ffffff;
-    --color-on-tertiary-container: #ffb787;
-    --color-on-tertiary-fixed: #311300;
-    --color-on-tertiary-fixed-variant: #723600;
-
-    --color-surface: #f4fbf3;
-    --color-surface-dim: #d5dcd4;
-    --color-surface-bright: #f4fbf3;
-    --color-surface-container-lowest: #ffffff;
-    --color-surface-container-low: #eef6ed;
-    --color-surface-container: #e9f0e8;
-    --color-surface-container-high: #e3eae2;
-    --color-surface-container-highest: #dde4dd;
-
-    --color-on-surface: #161d18;
-    --color-on-surface-variant: #404941;
-    --color-outline: #707971;
-    --color-outline-variant: #c0c9bf;
-
-    --color-error: #ba1a1a;
-    --color-error-container: #ffdad6;
-    --color-on-error: #ffffff;
-    --color-on-error-container: #93000a;
+    --bg-cream: #F7F4EC;
+    --primary-forest: #0F3D2E;
+    --primary-forest-mid: #1B5E45;
+    --primary-forest-btn: #14532D;
+    --accent-gold: #C8923A;
+    --alert-terracotta: #B5472B;
+    --urgent-orange: #C2410C;
+    --text-charcoal: #1C2420;
+    --text-secondary: #5B6660;
+    --card-surface: #FFFFFF;
+    --shadow-soft: 0 8px 24px rgba(15, 61, 46, 0.08);
+    --shadow-header: 0 12px 32px rgba(15, 61, 46, 0.14);
   }
 
   html, body {
@@ -50,68 +21,210 @@
     min-height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--color-surface);
-    color: var(--color-on-surface);
+    background-color: #F7F4EC;
+    color: #1C2420;
+    font-family: 'Manrope', 'Noto Sans Tamil', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6, .font-headline, .font-display, .font-label {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  }
-
-  /* Safe padding utilities for notch / mobile nav */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 16px);
-  }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top, 0px);
+  /* Tamil text specific line-height boost */
+  :lang(ta), .font-tamil {
+    font-family: 'Noto Sans Tamil', 'Manrope', sans-serif;
+    line-height: 1.55;
   }
 }
 
-/* Custom scrollbar hiding for clean native app feel */
+.font-serif-hero {
+  font-family: 'Fraunces', 'Noto Serif Tamil', Georgia, serif;
+}
+
+.font-tamil-serif {
+  font-family: 'Noto Serif Tamil', 'Fraunces', serif;
+}
+
+.font-ui {
+  font-family: 'Manrope', 'Noto Sans Tamil', system-ui, sans-serif;
+}
+
+/* App Mobile Shell Container (390 x 844 target) */
+.mobile-viewport {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  position: relative;
+  background-color: #F7F4EC;
+  box-shadow: 0 0 40px rgba(15, 61, 46, 0.12);
+}
+
+/* Card Surface */
+.card-heritage {
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(15, 61, 46, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-heritage:active {
+  transform: scale(0.99);
+}
+
+/* Card Dashboard Surface with subtle border and soft shadow */
+.card-dashboard {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid #E5E9E4;
+  box-shadow: 0 4px 20px rgba(15, 61, 46, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-dashboard:active {
+  transform: scale(0.995);
+}
+
+/* Leaf contour header pattern */
+.bg-leaf-pattern {
+  background-image: radial-gradient(rgba(247, 244, 236, 0.06) 1.5px, transparent 1.5px),
+                    radial-gradient(rgba(200, 146, 58, 0.04) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+/* Button System */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  min-height: 48px;
+  padding: 0 20px;
+  background-color: #14532D;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  width: 100%;
+}
+.btn-primary:hover {
+  background-color: #0F3D2E;
+}
+.btn-primary:active {
+  transform: scale(0.98);
+  background-color: #0B2B20;
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-urgent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  min-height: 48px;
+  padding: 0 20px;
+  background-color: #C2410C;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  width: 100%;
+}
+.btn-urgent:hover {
+  background-color: #9A3412;
+}
+.btn-urgent:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  min-height: 48px;
+  padding: 0 20px;
+  background-color: #FFFFFF;
+  color: #14532D;
+  border: 1.5px solid #14532D;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  width: 100%;
+}
+.btn-secondary:hover {
+  background-color: #F7F4EC;
+}
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-text-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 8px 12px;
+  color: #14532D;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.btn-text-link:hover {
+  opacity: 0.8;
+}
+
+.btn-destructive-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 8px 12px;
+  color: #B91C1C;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Safe area padding utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 24px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Scrollbar hide */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-/* Material symbols adjustments */
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Diagonal pattern for capacity deficit meter bar */
-.pattern-diagonal {
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.25),
-    rgba(255, 255, 255, 0.25) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-}
-
-/* Animation utilities */
-@keyframes pulseSlow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-.animate-pulse-slow {
-  animation: pulseSlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
