@@ -1,35 +1,51 @@
-# Smart Rural Storage (SRS)
-### AI-Based Rural Cold Storage Booking & Inventory Management
+# AgriSync — AI-Based Rural Cold Storage Booking & Independent Inventory Management System
 
-> **Source of Truth Visual Specification**: Recreated faithfully from Google Stitch design specifications with Plus Jakarta Sans & Noto Sans typography, Deep Harvest Foliage (`#1E5E3A`) & Fresh Sprout Emerald (`#006C49`) color palettes, dual Tamil & English vernacular toggle, and field-ready responsive cards.
+**AgriSync** is a production-minded web application designed for smallholder farmers and cold storage facility owners across rural Tamil Nadu agro-clusters (Oddanchatram, Dindigul, Palani, Madurai).
 
 ---
 
-## 🌾 Overview & Core Value Proposition
+## 🏛️ Non-Negotiable Core Architectural Invariants
 
-**Smart Rural Storage** connects smallholder farmers in Tamil Nadu (Oddanchatram, Dindigul, Palani, Madurai) with decentralized solar-backed cold chain storage hubs. The platform eliminates distress selling during mandi harvest gluts through:
-
-1. **AI Price Forecasting & Arbitrage**: Computes price trajectory vs. cold chamber daily rental fee, demonstrating net profit arbitrage before booking.
-2. **Atomic Capacity Reservation**: Locks physical chamber crates atomically to eliminate double-booking and concurrent capacity conflicts.
-3. **Field-Ready Digital Gate Pass**: Procedurally rendered SVG QR code with 4-digit PIN for rapid truck weighing and chamber slotting.
-4. **Authoritative Batch Inventory**: Tracks booked vs. verified intake vs. partial withdrawals with timestamped movement audit trails.
-5. **Capacity Conflict Resolution**: When chamber capacity drops due to mandatory compressor maintenance, farmers receive visual notice with 4 actionable choices (Accept partial, Reroute, Reschedule, or Instant Refund).
-6. **Optical Live Inspection**: Virtual camera booth with PTZ zoom controls to monitor condensation and crop freshness without opening doors.
-7. **Bilingual Native Experience**: Seamless instantaneous toggle between **English** and **தமிழ் (Tamil)** across every screen.
+1. **Two Strictly Independent Workflows**:
+   - **Cold Storage Booking Management**: Farmers discover cold chain facilities, query multi-interval capacity across booking dates, calculate cost estimates, perform atomic reservations, and obtain digital gate passes. **Creating a booking never creates an inventory record or alters physical stock.**
+   - **Normal Inventory Management**: Facility owners independently register products and crop batches, record walk-in deliveries with **zero booking prerequisite**, verify gate scale intake, perform partial withdrawals, transfer stock between chambers, log damage/spoilage adjustments, and maintain an immutable movement audit ledger. An optional booking reference may be linked when booked goods physically arrive, but is never mandatory.
+2. **Dual Independent Capacity Accounting**:
+   - **Physical Occupancy Ledger**: Measures physical produce present in storage chambers (`kg` & crates).
+   - **Reserved Capacity Ledger**: Measures capacity committed to active reservations over specific calendar windows.
+   - These two metrics are displayed separately on owner dashboards and are never conflated.
+3. **Strict Non-Autonomous AI Architecture**:
+   - AI price arbitrage, mandi market forecasts, and predictive capacity alerts are purely advisory.
+   - AI algorithms are **strictly forbidden** from automatically modifying booking dates, mutating stock balances, or adjusting financial records.
 
 ---
 
 ## 🚀 Quick Start Guide
 
 ### 1. Prerequisites
-- **Node.js**: v18+ (tested on Node v24)
-- **Python**: v3.10+ (for optional AI microservice)
+- **Node.js**: v18+ (tested on Node v20/v24)
+- **Python**: v3.10+ (tested on Python 3.11)
 
-### 2. Frontend Setup (React + Vite + Tailwind CSS)
+### 2. Backend Setup (FastAPI + SQLAlchemy)
+
 ```bash
-# Clone and enter directory
-cd "MINI PROJECT"
+# Navigate to project root
+cd "c:\FULL STACK DEVELOPMENT\MINI PROJECT"
 
+# Install Python backend dependencies
+pip install fastapi uvicorn sqlalchemy pydantic pytest httpx pandas scikit-learn
+
+# Seed the database with Tamil Nadu cold chain facilities, chambers & test users
+python -m backend.app.seed
+
+# Start the unified FastAPI backend server (Runs on port 8000)
+uvicorn backend.main:app --reload --port 8000
+```
+- API Docs (Swagger UI): `http://localhost:8000/docs`
+- Interactive OpenAPI ReDoc: `http://localhost:8000/redoc`
+
+### 3. Frontend Setup (React + Vite + Tailwind CSS + TypeScript)
+
+```bash
 # Install frontend dependencies
 npm install
 
@@ -38,72 +54,122 @@ npm run dev
 ```
 The application will launch at `http://localhost:5173/`.
 
-### 3. Build & Production Preview
+### 4. Running Acceptance Tests
+
+Execute the 10 critical architectural and business logic separation acceptance tests:
+
 ```bash
-# Verify TypeScript & compile production bundle
-npm run build
-
-# Preview production build locally
-npm run preview
+pytest backend/tests/test_master_acceptance.py -v
 ```
 
-### 4. Optional: Python FastAPI AI Microservice
-```bash
-# Navigate to AI service folder
-cd ai-service
-
-# Install python dependencies
-pip install -r requirements.txt
-
-# Start FastAPI server
-uvicorn main:app --reload --port 8000
-```
-API documentation will be available at `http://localhost:8000/docs`.
+All 10 tests will verify:
+- **Test A**: Creating a booking alone does NOT create inventory batches.
+- **Test B**: Normal inventory intake without booking succeeds.
+- **Test C**: Physical withdrawal deducts stock correctly and prevents negative stock.
+- **Test D**: Booking cancellation releases reserved capacity without deleting unrelated inventory.
+- **Test E**: Intake with optional booking increases physical stock only by verified quantity.
+- **Test F**: Simultaneous / conflicting reservations exceeding rated capacity are blocked atomically.
+- **Test G**: Excessive withdrawals are rejected.
+- **Test H**: Inter-chamber stock transfers conserve total facility stock.
+- **Test I**: AI capacity warnings do not change quantities or mutate bookings.
+- **Test J**: Batches with active physical stock cannot be prematurely archived.
 
 ---
 
-## 🗄️ Database Setup (Supabase PostgreSQL)
+## 🧩 Technology Stack
 
-1. Create a project in [Supabase](https://supabase.com).
-2. Open the **SQL Editor** in the Supabase dashboard.
-3. Copy and run the contents of [`supabase/schema.sql`](./supabase/schema.sql).
-4. The schema includes:
-   - Normalized tables: `profiles`, `facilities`, `storage_units`, `bookings`, `inventory_batches`, `inventory_movements`, `reviews`, `notifications`.
-   - Row Level Security (RLS) policies protecting farmer records and facility owner operations.
-   - Atomic database procedure: `reserve_cold_storage_capacity` with row-level locks (`FOR UPDATE`).
-5. Set your `.env` variables from `.env.example`:
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_AI_API_URL=http://localhost:8000
-```
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Lucide React, Recharts, Canvas Confetti |
+| **State Management** | React Context (`AppContext.tsx`), Typed REST Client (`src/lib/api.ts`) |
+| **Backend** | Python FastAPI, Pydantic V2 (`ConfigDict`), Starlette CORS |
+| **Persistence** | SQLAlchemy ORM, SQLite (`agrisync.db`) with instant Supabase/PostgreSQL compatibility |
+| **AI & Forecasting** | Scikit-learn / Linear Econometric Price Arbitrage, Local Rule-based alert fallbacks, optional Ollama LLM |
+| **Security & Auth** | Role-based Authorization (`farmer`, `owner`, `admin`), PIN Gate Pass authentication, Audit Logging |
 
 ---
 
-## 📱 Implemented Screen Checklist
+## 📱 Role Navigation & Screen Architecture
 
-| Screen | Route | Stitch Design Reference | Functionality |
-|---|---|---|---|
-| **Service Selection** | `/service-selection` | Entry Point | Choice between Cold Storage & Central Inventory |
-| **Farmer Home** | `/farmer/home` | `farmer_home_active_storage_hub` | Active lot telemetry, Spoilage variance gauge, Mandi forecast preview, Nearby hubs |
-| **Chamber Discovery** | `/discovery` | Regional GIS Hubs | Search by village, crop filter, interactive map & list views |
-| **Facility Details** | `/facility/:id` | Unit Telemetry | Chamber specs, live temperature, manager details, reviews |
-| **Booking Wizard** | `/wizard` | Booking Flow | Multi-step capacity selection, transparent billing breakdown, atomic reservation |
-| **Gate Pass & Timeline** | `/booking/:code/confirmation` | `booking_receipt_gate_pass_timeline` | Confetti delight burst, SVG QR Code, PIN 4892, 5-stage gate pass lifecycle |
-| **Crop Batch Inventory** | `/farmer/inventory` | `farmer_inventory_crop_batch_hub` | Batches, stored weight vs booked, progress bars, partial withdrawal modal |
-| **Conflict Resolution** | `/capacity-conflict` | `capacity_conflict_resolution` | Space deficit meter (-40%), manager voice log, 4 farmer consent options |
-| **AI Price Arbitrage** | `/ai-arbitrage` | `ai_crop_price_forecast_storage_arbitrage` | 7/14/30d horizons, interactive Recharts confidence intervals, profit simulator |
-| **Live Inspection** | `/live-inspection/:code` | Virtual Camera Booth | Simulated chamber PTZ feed, zoom controls, discrepancy incident reporting |
-| **Feedback & Revisit** | `/feedback-revisit/:code` | Trust & Repeat Booking | 1-5 star review, quick rebook flow or trackable complaint ticket (`#DISP-88`) |
-| **Owner Dashboard** | `/owner/dashboard` | Facility Console | Capacity utilization, live chamber telemetry, gate weighing scale station |
-| **Central Inventory** | `/central/inventory` | Enterprise Ledger | All warehouse batches, movement audit logs, CSV ledger export |
-| **Activity & Alerts** | `/activity` | Notification Center | Pickup alerts, gate pass notices, chamber temperature alerts |
-| **Profile Settings** | `/profile` | User Settings | Switch farmer/owner/admin persona, English/Tamil toggle, Supabase config |
+### 1. Public & Authentication
+- `/` — Public Landing Page (APMC mandi ticker, dual module overview, How It Works)
+- `/login` — One-Click Persona Login (`Murugan S.` Farmer, `Arumugam P.` Owner, `Dr. Jayakumar IAS` Admin)
+- `/register` — Role-based user onboarding
+
+### 2. Farmer Experience (`/farmer/*`)
+- `/farmer/home` — Farmer telemetry, active produce, temperature monitoring
+- `/discovery` — Cold storage directory with location & crop filters
+- `/facility/:id` — Facility details, chamber specs, live telemetry & reviews
+- `/wizard` — Multi-step capacity selection, multi-interval availability check & pricing engine
+- `/farmer/bookings` — My Bookings, Gate Pass QR code, PIN verification & cancellation
+- `/capacity-conflict` — Space deficit notice with 4 farmer consent options
+- `/ai-arbitrage` — Mandi crop price forecasting & cold storage profit simulator
+- `/live-inspection/:code` — Virtual PTZ optical camera inspection booth
+- `/feedback-revisit/:code` — Post-service star rating & dispute management
+
+### 3. Storage Owner Experience (`/owner/*`)
+- `/owner/dashboard` — Dual capacity ledger summary, quick actions, and alerts
+- `/owner/bookings` — Booking management, status transitions, and gate check-in
+- `/owner/inventory` — Independent Normal Inventory Dashboard with 10-operation menu
+- `/owner/inventory/new` — **Operation 1**: Register New Crop Batch (no booking needed)
+- `/owner/inventory/intake` — **Operation 2**: Physical Scale Intake (verified weight)
+- `/owner/inventory/withdrawal` — **Operation 3**: Physical Withdrawal (non-negative enforcement)
+- `/owner/inventory/transfer` — **Operation 4**: Inter-Chamber Transfer (total stock conserved)
+- `/owner/inventory/adjust` — **Operation 5**: Damage / Spoilage Adjustment with mandatory reason
+- `/owner/inventory/history` — **Operation 6**: Immutable Transaction Ledger with CSV export
+- `/owner/locations` — **Operation 7**: Chamber management & maintenance locks
+- `/owner/ai-insights` — **Operation 8**: Advisory AI Insights & predictive alerts
+- `/profile` — Facility settings & vernacular language switch (English / தமிழ்)
+
+### 4. Administrator Experience (`/admin/*`)
+- `/admin/dashboard` — System-wide governance, facility approvals, capacity overviews
+- `/admin/audit` — Immutable platform audit trail
 
 ---
 
-## 🎨 Design System & Accessibility
+## 📡 Backend REST API Endpoints
 
-- **Font Pairing**: `Plus Jakarta Sans` for headers and action surfaces + `Noto Sans` for vernacular structural readability (English + Tamil script).
-- **Light Theme Only**: Specifically built in high-contrast light mode (`#f4fbf3` surface) to guarantee zero glare under direct midday field sunlight.
-- **Touch Targets**: Minimum 48px to 52px interactive button heights for effortless operation with weathered hands or farming gloves.
+### Authentication (`/api/auth`)
+- `POST /api/auth/register` — Register farmer, owner, or administrator
+- `POST /api/auth/login` — Authenticate and receive session token
+- `GET /api/auth/me` — Retrieve current authenticated profile
+
+### Facilities & Capacity (`/api/facilities`)
+- `GET /api/facilities` — List all cold storage hubs
+- `GET /api/facilities/{facility_id}` — Get facility details and chamber telemetry
+- `GET /api/facilities/{facility_id}/availability` — Multi-interval capacity calculation
+- `POST /api/facilities` — Register new cold storage facility (Owner/Admin)
+
+### Bookings (`/api/bookings`)
+- `POST /api/bookings` — Atomic capacity reservation
+- `GET /api/bookings` — List bookings filtered by user role
+- `GET /api/bookings/{booking_id}` — Booking details & digital gate pass
+- `POST /api/bookings/{booking_id}/cancel` — Cancel booking and release reserved capacity
+- `POST /api/bookings/{booking_id}/reviews` — Submit farmer review or grievance
+
+### Independent Inventory (`/api/inventory`)
+- `POST /api/inventory/batches` — Register product/batch without booking
+- `GET /api/inventory/batches` — List physical batches in storage
+- `POST /api/inventory/intake` — Record physical scale intake
+- `POST /api/inventory/withdrawal` — Record physical withdrawal
+- `POST /api/inventory/transfers` — Transfer stock between chambers
+- `POST /api/inventory/adjustments` — Stock adjustment (spoilage/count correction)
+- `GET /api/inventory/transactions` — Immutable movement audit trail
+- `GET /api/inventory/summary` — Physical occupancy metrics
+
+### Dashboard & Advisory AI (`/api/dashboard`, `/api/ai`)
+- `GET /api/dashboard/owner` — Unified metrics with separated capacity ledgers
+- `GET /api/ai/insights` — Non-autonomous predictive alerts and demand forecasting
+- `GET /api/ai/forecast` — Mandi crop price forecasting and arbitrage simulation
+
+---
+
+## 🛡️ Integrity & Verification Summary
+
+| Check | Status | Verification Method |
+|---|---|---|
+| Frontend Build | ✅ PASS | `npm run build` (Vite v8.3.4, TypeScript strict compilation) |
+| Backend Acceptance Suite | ✅ 10/10 PASS | `pytest backend/tests/test_master_acceptance.py` |
+| Independent Inventory | ✅ VERIFIED | Batches registered without booking ID in backend & frontend |
+| Dual Capacity Ledgers | ✅ VERIFIED | Physical occupancy and reserved capacity calculated on separate ledgers |
+| Bilingual Support | ✅ VERIFIED | English & Tamil (தமிழ்) toggle operational across all components |

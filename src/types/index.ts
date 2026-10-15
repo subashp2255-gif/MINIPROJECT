@@ -123,6 +123,7 @@ export interface InventoryBatch {
   currentHumidity: number;
   status: 'in_storage' | 'in_transit' | 'ready_to_collect' | 'withdrawn';
   qualityScore: number;
+  condition?: 'good' | 'fair' | 'damaged' | 'spoiled' | string;
   notes?: string;
 }
 
@@ -214,4 +215,44 @@ export interface AIPriceForecastPoint {
   upperConfidence: number;
   cumulativeStorageCost: number;
   netArbitrageMargin: number;
+}
+
+export interface CapacityLedger {
+  facilityId: string;
+  facilityName: string;
+  totalRatedCapacityKg: number;
+  totalRatedCapacityCrates: number;
+  currentPhysicalOccupancyKg: number;
+  currentPhysicalOccupancyCrates: number;
+  availablePhysicalCapacityKg: number;
+  availablePhysicalCapacityCrates: number;
+  reservedCapacityKgToday: number;
+  reservedCapacityCratesToday: number;
+  maintenanceBlockedKg: number;
+  maintenanceBlockedCrates: number;
+  utilizationPhysicalPercentage: number;
+  utilizationReservedPercentage: number;
+}
+
+export interface AIInsight {
+  id: string;
+  category: 'demand_forecast' | 'capacity_warning' | 'near_expiry' | 'spoilage_risk' | 'arbitrage';
+  title: string;
+  description: string;
+  severity: 'info' | 'warning' | 'critical';
+  confidence: number;
+  dataSource: string;
+  recommendedAction: string;
+  generatedAt?: string;
+}
+
+export interface InventoryAlert {
+  id: string;
+  facilityId: string;
+  alertType: 'low_stock' | 'near_expiry' | 'expired' | 'capacity_warning' | 'damage_detected';
+  title: string;
+  message: string;
+  severity: 'info' | 'warning' | 'critical';
+  isResolved: boolean;
+  createdAt: string;
 }
