@@ -1,20 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { AlertTriangle, Truck, Thermometer, Bell, ArrowRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const ActivityAlertsPage: React.FC = () => {
   const { notifications, markNotificationAsRead, language } = useApp();
 
   return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
+    <div className="flex flex-col relative w-full pt-28 pb-32 bg-[#F4FBF3] min-h-screen">
       <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#1e5e3a]">Activity &amp; Alerts</h1>
-            <p className="text-xs text-[#404941]">Gate pass alerts, telemetry triggers &amp; notices</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#14532D]">Activity &amp; Alerts</h1>
+            <p className="text-xs text-[#526055]">Gate pass alerts, telemetry triggers &amp; notices</p>
           </div>
-          <span className="text-xs font-bold text-[#006c49] bg-[#86f8c2]/50 px-2.5 py-1 rounded-full">
+          <span className="text-xs font-bold text-[#14532D] bg-[#86f8c2]/50 px-2.5 py-1 rounded-full">
             {notifications.filter((n) => !n.read).length} Unread
           </span>
         </div>
@@ -33,25 +34,25 @@ export const ActivityAlertsPage: React.FC = () => {
             >
               <div className="flex items-start gap-3">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                     notif.type === 'conflict'
                       ? 'bg-[#ffdcc6] text-[#844000]'
                       : notif.type === 'pickup'
                       ? 'bg-[#aff2c2] text-[#00210f]'
                       : notif.type === 'temperature'
                       ? 'bg-blue-100 text-blue-800'
-                      : 'bg-[#eef6ed] text-[#1e5e3a]'
+                      : 'bg-[#EEF6ED] text-[#14532D]'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {notif.type === 'conflict'
-                      ? 'warning'
-                      : notif.type === 'pickup'
-                      ? 'local_shipping'
-                      : notif.type === 'temperature'
-                      ? 'thermostat'
-                      : 'notifications'}
-                  </span>
+                  {notif.type === 'conflict' ? (
+                    <AlertTriangle className="w-5 h-5" />
+                  ) : notif.type === 'pickup' ? (
+                    <Truck className="w-5 h-5" />
+                  ) : notif.type === 'temperature' ? (
+                    <Thermometer className="w-5 h-5" />
+                  ) : (
+                    <Bell className="w-5 h-5" />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -59,7 +60,7 @@ export const ActivityAlertsPage: React.FC = () => {
                     <h3 className="text-xs font-bold text-[#161d18] truncate">
                       {language === 'ta' ? notif.titleTa : notif.title}
                     </h3>
-                    <span className="text-[10px] text-[#404941] flex-shrink-0">{notif.timestamp}</span>
+                    <span className="text-[10px] text-[#404941] shrink-0">{notif.timestamp}</span>
                   </div>
 
                   <p className="text-xs text-[#404941] mt-0.5 leading-snug">
@@ -70,10 +71,10 @@ export const ActivityAlertsPage: React.FC = () => {
                     <div className="mt-2">
                       <Link
                         to={notif.linkUrl}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1e5e3a] hover:underline"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#14532D] hover:underline"
                       >
                         <span>View Details</span>
-                        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
                   )}

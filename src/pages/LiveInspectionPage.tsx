@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Camera, AlertTriangle, Calendar, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const LiveInspectionPage: React.FC = () => {
@@ -33,19 +34,19 @@ export const LiveInspectionPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
+    <div className="flex flex-col relative w-full pt-28 pb-32 bg-[#F4FBF3] min-h-screen">
       <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             to="/farmer/home"
-            className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#161d18] shadow-xs border border-[#dfe4dc]"
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#14532D] shadow-xs border border-[#DFE4DC] hover:bg-[#EEF6ED] transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-[#1e5e3a]">Chamber Live Inspection</h1>
-            <p className="text-xs text-[#404941]">
+            <h1 className="text-xl font-bold text-[#14532D]">Chamber Live Inspection</h1>
+            <p className="text-xs text-[#526055]">
               Optical IoT Telemetry &amp; Video Inspection Booth • {batch.batchCode}
             </p>
           </div>
@@ -124,10 +125,10 @@ export const LiveInspectionPage: React.FC = () => {
               {/* Snapshot */}
               <button
                 onClick={handleSnapshot}
-                className="p-1.5 bg-[#006c49] rounded-md text-white flex items-center justify-center"
+                className="p-1.5 bg-[#14532D] rounded-md text-white flex items-center justify-center hover:bg-[#166534] transition-colors"
                 title="Capture Frame"
               >
-                <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+                <Camera className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -157,9 +158,9 @@ export const LiveInspectionPage: React.FC = () => {
 
           <button
             onClick={() => setShowReportModal(true)}
-            className="w-full h-11 rounded-xl bg-[#ffdcc6] text-[#844000] text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#ffb786] transition-colors"
+            className="w-full h-12 rounded-xl bg-[#ffdcc6] text-[#844000] text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#ffb786] transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">report_problem</span>
+            <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Report Quality Discrepancy or Damage</span>
           </button>
         </div>
@@ -200,9 +201,9 @@ export const LiveInspectionPage: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full h-12 rounded-xl bg-[#1e5e3a] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#16462b] active:scale-98 transition-all shadow-xs"
+              className="w-full h-12 rounded-xl bg-[#14532D] text-white text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#166534] active:scale-98 transition-all shadow-xs"
             >
-              <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+              <Calendar className="w-4 h-4 shrink-0" />
               <span>Confirm Guided Inspection Slot</span>
             </button>
           </form>
@@ -218,8 +219,8 @@ export const LiveInspectionPage: React.FC = () => {
                 <h3 className="font-bold text-lg text-[#161d18]">Report Storage Discrepancy</h3>
                 <p className="text-xs text-[#404941]">Incident report for {batch.batchCode}</p>
               </div>
-              <button onClick={() => setShowReportModal(false)} className="text-[#707971]">
-                <span className="material-symbols-outlined">close</span>
+              <button onClick={() => setShowReportModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-[#707971] hover:bg-gray-100">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -250,13 +251,13 @@ export const LiveInspectionPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowReportModal(false)}
-                  className="flex-1 h-11 bg-[#e9f0e8] text-xs font-bold rounded-xl"
+                  className="w-1/3 h-12 bg-[#EEF6ED] text-[#526055] text-xs font-semibold rounded-xl hover:bg-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 h-11 bg-[#844000] text-white text-xs font-bold rounded-xl hover:bg-[#612d00]"
+                  className="w-2/3 h-12 bg-[#8C5D17] text-white text-xs font-bold rounded-xl hover:bg-[#724a12] transition-colors"
                 >
                   Submit Incident
                 </button>

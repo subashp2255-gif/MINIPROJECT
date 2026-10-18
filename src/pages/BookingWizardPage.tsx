@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Building2, Calendar, Scale, Receipt, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export const BookingWizardPage: React.FC = () => {
-  const { facilities, createBooking, user } = useApp();
+  const { facilities, createBooking, user, language } = useApp();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isTa = language === 'ta';
   const preselectedFacId = searchParams.get('facilityId') || facilities[0].id;
 
   const [selectedFacilityId, setSelectedFacilityId] = useState<string>(preselectedFacId);
@@ -82,29 +84,41 @@ export const BookingWizardPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
+    <div className="flex flex-col relative w-full pt-6 pb-32 bg-[#F4FBF3] min-h-screen text-[#1C2420]">
       <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
-        {/* Header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#1e5e3a]">Book Cold Storage Capacity</h1>
-          <p className="text-xs text-[#404941]">
-            Guaranteed solar chamber reservation with instant digital gate pass
-          </p>
+        {/* Header with Back button */}
+        <div className="flex items-center gap-2.5">
+          <Link
+            to="/discovery"
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1C2420] shadow-2xs border border-[#DFE4DC] hover:bg-[#F7F4EC] transition-colors"
+          >
+            <ArrowLeft size={18} />
+          </Link>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#14532D]">
+              {isTa ? 'குளிர்பதன இட முன்பதிவு' : 'Book Cold Storage Capacity'}
+            </h1>
+            <p className="text-xs text-[#5B6660]">
+              {isTa
+                ? 'உறுதிசெய்யப்பட்ட சூரிய மின் அறை முன்பதிவு • உடனடி டிஜிட்டல் கேட் பாஸ்'
+                : 'Guaranteed solar chamber reservation with instant digital gate pass'}
+            </p>
+          </div>
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 rounded-xl bg-[#ffdad6] text-[#93000a] text-xs font-semibold flex items-center gap-2 border border-red-300">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+          <div className="p-3.5 rounded-xl bg-red-50 text-red-800 text-xs font-semibold flex items-center gap-2 border border-red-200">
+            <AlertCircle size={18} className="text-red-600 flex-shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         <form onSubmit={handleBookingSubmit} className="space-y-4">
           {/* Step 1: Facility Selection */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#dfe4dc] space-y-3">
-            <h3 className="text-xs font-bold text-[#161d18] uppercase tracking-wider flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[18px] text-[#1e5e3a]">warehouse</span>
-              1. Select Facility &amp; Chamber
+          <div className="bg-white rounded-2xl p-4 shadow-2xs border border-[#DFE4DC] space-y-3">
+            <h3 className="text-xs font-bold text-[#1C2420] uppercase tracking-wider flex items-center gap-1.5">
+              <Building2 size={16} className="text-[#14532D]" />
+              <span>1. {isTa ? 'கிடங்கு & குளிர்சாதன அறை தேர்வு' : 'Select Facility & Chamber'}</span>
             </h3>
 
             <div className="space-y-2">
@@ -144,10 +158,10 @@ export const BookingWizardPage: React.FC = () => {
           </div>
 
           {/* Step 2: Crop & Quantity */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#dfe4dc] space-y-3">
-            <h3 className="text-xs font-bold text-[#161d18] uppercase tracking-wider flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[18px] text-[#1e5e3a]">nutrition</span>
-              2. Crop Specifications &amp; Quantity
+          <div className="bg-white rounded-2xl p-4 shadow-2xs border border-[#DFE4DC] space-y-3">
+            <h3 className="text-xs font-bold text-[#1C2420] uppercase tracking-wider flex items-center gap-1.5">
+              <Scale size={16} className="text-[#14532D]" />
+              <span>2. {isTa ? 'பயிர் விவரம் & கூடைகள் அளவு' : 'Crop Specifications & Quantity'}</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-2">
@@ -213,29 +227,33 @@ export const BookingWizardPage: React.FC = () => {
           </div>
 
           {/* Step 3: Dates & Duration */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#dfe4dc] space-y-3">
-            <h3 className="text-xs font-bold text-[#161d18] uppercase tracking-wider flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[18px] text-[#1e5e3a]">calendar_today</span>
-              3. Storage Window
+          <div className="bg-white rounded-2xl p-4 shadow-2xs border border-[#DFE4DC] space-y-3">
+            <h3 className="text-xs font-bold text-[#1C2420] uppercase tracking-wider flex items-center gap-1.5">
+              <Calendar size={16} className="text-[#14532D]" />
+              <span>3. {isTa ? 'சேமிப்புக் காலம்' : 'Storage Window'}</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-[#404941] mb-1">Inbound Date</label>
+                <label className="block text-xs font-semibold text-[#404941] mb-1">
+                  {isTa ? 'சேமிப்புத் தொடக்க தேதி' : 'Inbound Date'}
+                </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full h-11 px-3 text-xs font-semibold bg-[#eef6ed] border border-[#c0c9bf] rounded-xl outline-hidden"
+                  className="w-full h-11 px-3 text-xs font-semibold bg-[#F4FBF3] border border-[#C0C9BF] rounded-xl outline-hidden"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#404941] mb-1">Duration (Days)</label>
+                <label className="block text-xs font-semibold text-[#404941] mb-1">
+                  {isTa ? 'நாட்கள் அளவு' : 'Duration (Days)'}
+                </label>
                 <select
                   value={durationDays}
                   onChange={(e) => setDurationDays(Number(e.target.value))}
-                  className="w-full h-11 px-3 text-xs font-semibold bg-[#eef6ed] border border-[#c0c9bf] rounded-xl outline-hidden"
+                  className="w-full h-11 px-3 text-xs font-semibold bg-[#F4FBF3] border border-[#C0C9BF] rounded-xl outline-hidden"
                 >
                   <option value={7}>7 Days (Mandi dip hold)</option>
                   <option value={10}>10 Days (Optimal freshness)</option>
@@ -247,37 +265,41 @@ export const BookingWizardPage: React.FC = () => {
           </div>
 
           {/* Step 4: Transparent Cost Breakdown */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#dfe4dc] space-y-2.5">
-            <h3 className="text-xs font-bold text-[#161d18] uppercase tracking-wider flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[18px] text-[#1e5e3a]">receipt_long</span>
-              4. Transparent Billing Breakdown
+          <div className="bg-white rounded-2xl p-4 shadow-2xs border border-[#DFE4DC] space-y-2.5">
+            <h3 className="text-xs font-bold text-[#1C2420] uppercase tracking-wider flex items-center gap-1.5">
+              <Receipt size={16} className="text-[#14532D]" />
+              <span>4. {isTa ? 'வெளிப்படையான கட்டண விவரம்' : 'Transparent Billing Breakdown'}</span>
             </h3>
 
-            <div className="space-y-1.5 text-xs text-[#404941]">
+            <div className="space-y-1.5 text-xs text-[#5B6660]">
               <div className="flex justify-between">
                 <span>
                   Base Storage ({quantityCrates} crates × ₹{facility.pricePerCrateDay} × {durationDays} days):
                 </span>
-                <span className="font-semibold text-[#161d18]">₹{baseStorageCost.toFixed(2)}</span>
+                <span className="font-semibold text-[#1C2420]">₹{baseStorageCost.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Intake Palletizing &amp; Sanitization:</span>
-                <span className="font-semibold text-[#161d18]">₹{handlingCost.toFixed(2)}</span>
+                <span className="font-semibold text-[#1C2420]">₹{handlingCost.toFixed(2)}</span>
               </div>
               {facility.solarPowered && (
-                <div className="flex justify-between text-[#006c49]">
+                <div className="flex justify-between text-[#14532D]">
                   <span>Solar Hybrid Power Backup Surcharge:</span>
                   <span className="font-semibold">₹{solarBackupFee.toFixed(2)}</span>
                 </div>
               )}
             </div>
 
-            <div className="pt-2 border-t border-[#dde4dd] flex items-center justify-between">
+            <div className="pt-2 border-t border-[#DFE4DC] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-[#161d18] block">Estimated Total Cost</span>
-                <span className="text-[10px] text-[#404941]">Pay upon gate collection or post-harvest sale</span>
+                <span className="text-xs font-bold text-[#1C2420] block">
+                  {isTa ? 'மொத்த மதிப்பீட்டு கட்டணம்' : 'Estimated Total Cost'}
+                </span>
+                <span className="text-[10px] text-[#5B6660]">
+                  {isTa ? 'வாயில் விநியோகத்தின்போது அல்லது சந்தை விற்பனையின்போது செலுத்தலாம்' : 'Pay upon gate collection or post-harvest sale'}
+                </span>
               </div>
-              <span className="text-xl font-extrabold text-[#1e5e3a]">
+              <span className="text-xl font-extrabold text-[#14532D]">
                 ₹{totalCost.toLocaleString()}
               </span>
             </div>
@@ -287,10 +309,14 @@ export const BookingWizardPage: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-14 rounded-2xl bg-[#1e5e3a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-[#16462b] active:scale-98 transition-all disabled:opacity-50"
+            className="w-full h-14 rounded-2xl bg-[#14532D] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs hover:bg-[#0F3D2E] active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">how_to_reg</span>
-            <span>{submitting ? 'Confirming Chamber Reservation...' : 'Confirm Booking & Generate Gate Pass'}</span>
+            <CheckCircle2 size={18} />
+            <span>
+              {submitting
+                ? (isTa ? 'முன்பதிவு செய்யப்படுகிறது...' : 'Confirming Chamber Reservation...')
+                : (isTa ? 'முன்பதிவை உறுதிசெய்து கேட் பாஸ் பெறவும்' : 'Confirm Booking & Generate Gate Pass')}
+            </span>
           </button>
         </form>
       </div>

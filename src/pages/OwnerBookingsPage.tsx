@@ -123,7 +123,7 @@ export const OwnerBookingsPage: React.FC = () => {
               }`}
             >
               <Truck size={14} />
-              <span>{isTa ? 'மீட்புக் கோரிக்கைகள்' : 'Pickup Requests (CS14)'}</span>
+              <span>{isTa ? 'மீட்புக் கோரிக்கைகள்' : 'Pickup Requests'}</span>
               {pickupRequests.filter((p) => p.status === 'pending').length > 0 && (
                 <span className="w-2 h-2 rounded-full bg-red-500" />
               )}
@@ -215,10 +215,10 @@ export const OwnerBookingsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenScale(b.bookingCode, b.bookedKg, b.bookedCrates, b.chamberName)}
-                        className="h-9 px-3.5 rounded-xl bg-[#14532D] text-white text-xs font-bold flex items-center gap-1.5 hover:bg-[#0F3D2E] shadow-2xs transition-all active:scale-98 cursor-pointer"
+                        className="h-10 px-3.5 rounded-xl bg-[#14532D] text-white text-xs font-bold flex items-center gap-1.5 hover:bg-[#0F3D2E] shadow-2xs transition-all active:scale-98 cursor-pointer"
                       >
                         <Scale size={15} />
-                        <span>{isTa ? 'எடை சரிபார்த்தல் (CS10)' : 'Verify Gate Intake'}</span>
+                        <span>{isTa ? 'எடை சரிபார்த்தல்' : 'Verify Gate Intake'}</span>
                       </button>
                     )}
 
@@ -322,12 +322,12 @@ export const OwnerBookingsPage: React.FC = () => {
                             className="flex-1 sm:flex-none py-2 px-3.5 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] transition-all flex items-center justify-center gap-1 cursor-pointer"
                           >
                             <Check size={14} />
-                            <span>{isTa ? 'அங்கீகரி (CS14)' : 'Approve Pickup (CS14)'}</span>
+                            <span>{isTa ? 'அங்கீகரி' : 'Approve Pickup'}</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => setRejectModalId(req.id)}
-                            className="py-2 px-3 rounded-xl border border-red-200 text-red-700 text-xs font-bold hover:bg-red-50 cursor-pointer"
+                            className="h-10 px-3 rounded-xl border border-red-200 text-red-700 text-xs font-bold hover:bg-red-50 cursor-pointer flex items-center justify-center"
                           >
                             {isTa ? 'நிராகரி' : 'Reject'}
                           </button>
@@ -338,10 +338,10 @@ export const OwnerBookingsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenReleaseModal(req)}
-                          className="w-full sm:w-auto py-2 px-4 rounded-xl bg-[#C8923A] text-white text-xs font-bold hover:bg-[#A67527] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                          className="w-full sm:w-auto h-10 px-4 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                         >
                           <Scale size={14} />
-                          <span>{isTa ? 'நேரடி வாயில் வெளியீடு பதிவு (CS15)' : 'Record Physical Withdrawal (CS15)'}</span>
+                          <span>{isTa ? 'வாயில் வெளியீடு பதிவு' : 'Record Gate Release'}</span>
                         </button>
                       )}
 
@@ -365,13 +365,13 @@ export const OwnerBookingsPage: React.FC = () => {
             <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-[#DFE4DC]">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-[#14532D] flex items-center gap-2">
-                  <Scale size={20} className="text-[#C8923A]" />
-                  <span>{isTa ? 'வாயில் எடை தராசு சரிபார்ப்பு (CS10)' : 'Gate Weighbridge Intake (CS10)'}</span>
+                  <Scale size={20} className="text-[#8C5D17]" />
+                  <span>{isTa ? 'வாயில் எடை தராசு சரிபார்ப்பு' : 'Gate Weighbridge Intake'}</span>
                 </h3>
                 <button
                   type="button"
                   onClick={() => setSelectedBookingCode(null)}
-                  className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-gray-500 font-bold cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-gray-500 font-bold hover:bg-[#E7F5EE] cursor-pointer"
                 >
                   ✕
                 </button>
@@ -443,14 +443,14 @@ export const OwnerBookingsPage: React.FC = () => {
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-[#DFE4DC]">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-[#C8923A] flex items-center gap-2">
+                <h3 className="text-base font-bold text-[#8C5D17] flex items-center gap-2">
                   <Truck size={18} />
-                  <span>{isTa ? 'உண்மையான பயிர் வெளியேற்றம் (CS15)' : 'Actual Produce Gate Release (CS15)'}</span>
+                  <span>{isTa ? 'பயிர் வாயில் வெளியேற்றம்' : 'Produce Gate Release'}</span>
                 </h3>
                 <button
                   type="button"
                   onClick={() => setActivePickupId(null)}
-                  className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-gray-500 font-bold cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-gray-500 font-bold hover:bg-[#E7F5EE] cursor-pointer"
                 >
                   ✕
                 </button>

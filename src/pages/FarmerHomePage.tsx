@@ -140,15 +140,15 @@ export const FarmerHomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/discovery')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#134E35] text-white text-xs font-bold hover:bg-[#0F3D2E] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  className="w-full h-12 px-4 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
                 >
-                  <span>{isTa ? 'குளிர்பதனத்தைத் திறக்கவும்' : 'Open Cold Storage'}</span>
-                  <ArrowRight size={14} />
+                  <span>{isTa ? 'குளிர்பதன முன்பதிவு' : 'Book Cold Storage'}</span>
+                  <ArrowRight size={15} />
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate('/farmer/bookings')}
-                  className="w-full py-1.5 text-center text-xs font-semibold text-[#134E35] hover:underline cursor-pointer"
+                  className="w-full h-10 px-3 rounded-xl border border-[#DFE4DC] bg-white text-[#14532D] text-xs font-semibold hover:bg-[#F4FBF3] transition-all flex items-center justify-center cursor-pointer"
                 >
                   {isTa ? 'எனது முன்பதிவுகள் காண்க' : 'View My Bookings'}
                 </button>
@@ -156,13 +156,13 @@ export const FarmerHomePage: React.FC = () => {
             </div>
 
             {/* CARD B — INVENTORY MANAGEMENT */}
-            <div className="card-dashboard p-5 border-t-4 border-t-[#C8923A] flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
+            <div className="card-dashboard p-5 border-t-4 border-t-[#8C5D17] flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-[#C8923A]/15 text-[#C8923A] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-[#F7F4EC] text-[#8C5D17] flex items-center justify-center">
                     <Package size={22} />
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C8923A] bg-[#C8923A]/15 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#8C5D17] bg-[#F7F4EC] px-2.5 py-0.5 rounded-full border border-[#DFE4DC]">
                     <span>{totalDryItems}</span>
                     <span>{isTa ? 'தானிய வகைகள்' : 'Dry Products'}</span>
                   </span>
@@ -170,12 +170,12 @@ export const FarmerHomePage: React.FC = () => {
 
                 <div>
                   <h2 className="text-base font-extrabold text-[#1C2420]">
-                    {isTa ? 'தானிய இருப்பு மேலாண்மை' : 'Enhanced Inventory Management'}
+                    {isTa ? 'தானிய இருப்பு மேலாண்மை' : 'Dry Harvest Inventory'}
                   </h2>
                   <p className="text-xs text-[#5B6660] mt-1 leading-relaxed">
                     {isTa
                       ? 'உலர்ந்த தானியங்கள், பருப்பு மற்றும் நெல் வகைகளை பதிவு செய்து நிர்வகிக்கவும்.'
-                      : 'Record and manage dry crops, grains and other stock.'}
+                      : 'Record and track paddy, pulses, wheat, and millets on your farm.'}
                   </p>
                 </div>
 
@@ -192,17 +192,17 @@ export const FarmerHomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/farmer/dry-inventory')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#C8923A] text-white text-xs font-bold hover:bg-[#A67527] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  className="w-full h-12 px-4 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
                 >
-                  <span>{isTa ? 'எனது இருப்பைத் திறக்கவும்' : 'Open My Inventory'}</span>
-                  <ArrowRight size={14} />
+                  <span>{isTa ? 'தானிய இருப்பைத் திறக்கவும்' : 'Manage Dry Inventory'}</span>
+                  <ArrowRight size={15} />
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate('/farmer/dry-inventory')}
-                  className="w-full py-1.5 text-center text-xs font-semibold text-[#C8923A] hover:underline cursor-pointer"
+                  className="w-full h-10 px-3 rounded-xl border border-[#DFE4DC] bg-white text-[#8C5D17] text-xs font-semibold hover:bg-[#F7F4EC] transition-all flex items-center justify-center cursor-pointer"
                 >
-                  {isTa ? 'தானிய இருப்புப் பட்டியல் காண்க' : 'View Dry Stock Ledger'}
+                  {isTa ? 'இருப்புப் பதிவேடு காண்க' : 'View Stock Ledger'}
                 </button>
               </div>
             </div>

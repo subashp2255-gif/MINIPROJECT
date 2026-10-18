@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Download, Search } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const CentralInventoryPage: React.FC = () => {
@@ -29,24 +30,24 @@ export const CentralInventoryPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
+    <div className="flex flex-col relative w-full pt-28 pb-32 bg-[#F4FBF3] min-h-screen">
       <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 space-y-4">
         {/* Header & Export */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#1e5e3a]">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#14532D]">
               Central Inventory Management
             </h1>
-            <p className="text-xs text-[#404941]">
+            <p className="text-xs text-[#526055]">
               Authoritative agricultural batch tracking &amp; audit trails
             </p>
           </div>
 
           <button
             onClick={handleExportCsv}
-            className="h-10 px-3.5 rounded-xl bg-[#e9f0e8] text-[#1e5e3a] text-xs font-bold flex items-center gap-1.5 hover:bg-[#e3eae2] border border-[#c0c9bf]/30"
+            className="h-11 px-4 rounded-xl bg-[#EEF6ED] text-[#14532D] text-xs font-bold flex items-center gap-2 hover:bg-[#e3eae2] border border-[#DFE4DC] transition-colors self-start sm:self-auto"
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <Download className="w-4 h-4" />
             <span>Export Ledger CSV</span>
           </button>
         </div>
@@ -55,20 +56,20 @@ export const CentralInventoryPage: React.FC = () => {
         <div className="flex gap-2 border-b border-[#dde4dd] pb-2">
           <button
             onClick={() => setActiveTab('batches')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === 'batches'
-                ? 'bg-[#1e5e3a] text-white shadow-xs'
-                : 'bg-white text-[#404941] hover:bg-[#e9f0e8]'
+                ? 'bg-[#14532D] text-white shadow-xs'
+                : 'bg-white text-[#526055] hover:bg-[#EEF6ED]'
             }`}
           >
             Active Crop Batches ({batches.length})
           </button>
           <button
             onClick={() => setActiveTab('movements')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === 'movements'
-                ? 'bg-[#1e5e3a] text-white shadow-xs'
-                : 'bg-white text-[#404941] hover:bg-[#e9f0e8]'
+                ? 'bg-[#14532D] text-white shadow-xs'
+                : 'bg-white text-[#526055] hover:bg-[#EEF6ED]'
             }`}
           >
             Movement Audit Trails ({movements.length})
@@ -77,15 +78,13 @@ export const CentralInventoryPage: React.FC = () => {
 
         {/* Search */}
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3.5 top-3 text-[#707971] text-[20px]">
-            search
-          </span>
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-[#526055]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search batch ID, crop name, or farmer..."
-            className="w-full h-11 pl-11 pr-4 bg-white rounded-xl border border-[#c0c9bf] text-xs font-medium focus:border-[#1e5e3a] outline-hidden shadow-2xs"
+            className="w-full h-11 pl-10 pr-4 bg-white rounded-xl border border-[#c0c9bf] text-xs font-medium focus:border-[#14532D] outline-hidden shadow-2xs"
           />
         </div>
 

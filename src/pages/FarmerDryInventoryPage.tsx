@@ -780,11 +780,11 @@ export const FarmerDryInventoryPage: React.FC = () => {
           ========================================================================= */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="max-w-lg w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 my-8">
+          <div className="max-w-lg w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C5D17] block">
-                  {isTa ? 'திரை INV2 • புதிய தானியம்' : 'Screen INV2 • Add Dry Product'}
+                  {isTa ? 'புதிய தானியப் பதிவு' : 'New Harvest Intake'}
                 </span>
                 <h3 className="text-base font-extrabold text-[#1C2420]">
                   {isTa ? 'உலர்ந்த வேளாண் பொருள் பதிவு' : 'Register Dry Agricultural Product'}
@@ -793,9 +793,9 @@ export const FarmerDryInventoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] transition-colors cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -967,20 +967,29 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
-              >
-                <span>{isTa ? 'தானியப் பொருளைப் பதிவு செய்' : 'Validate & Save Product (INV4)'}</span>
-                <ArrowRight size={16} />
-              </button>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
+                >
+                  {isTa ? 'ரத்து' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>{isTa ? 'பொருளைப் பதிவு செய்' : 'Validate & Save Product'}</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          SCREEN INV4: SAVE CONFIRMATION MODAL
+          SAVE CONFIRMATION MODAL
           ========================================================================= */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -991,7 +1000,7 @@ export const FarmerDryInventoryPage: React.FC = () => {
 
             <div className="space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#14532D]">
-                {isTa ? 'பதிவு உறுதி செய்யப்பட்டது (INV4)' : 'Product Saved Successfully (INV4)'}
+                {isTa ? 'பயிர் பதிவு உறுதி செய்யப்பட்டது' : 'Product Registered Successfully'}
               </span>
               <h3 className="text-lg font-bold text-[#1C2420]">
                 {isTa ? showConfirmModal.nameTa : showConfirmModal.name}
@@ -1023,7 +1032,7 @@ export const FarmerDryInventoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(null)}
-                className="w-full py-2.5 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] cursor-pointer"
+                className="w-full h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] cursor-pointer flex items-center justify-center shadow-xs"
               >
                 {isTa ? 'இருப்புப் பட்டியலுக்குச் செல்' : 'Go to Inventory'}
               </button>
@@ -1033,7 +1042,7 @@ export const FarmerDryInventoryPage: React.FC = () => {
                   setShowConfirmModal(null);
                   setShowAddModal(true);
                 }}
-                className="w-full py-2 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-xs font-semibold text-[#5B6660] hover:bg-white cursor-pointer"
+                className="w-full h-10 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-xs font-semibold text-[#5B6660] hover:bg-white cursor-pointer flex items-center justify-center"
               >
                 {isTa ? 'மற்றொரு பயிர் சேர்க்க' : 'Add Another Product'}
               </button>
@@ -1043,21 +1052,21 @@ export const FarmerDryInventoryPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          SCREEN INV7: ADD STOCK MODAL
+          ADD STOCK MODAL
           ========================================================================= */}
       {showAddStockModal && activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#14532D]">
-                {isTa ? 'இருப்பு சேர்த்தல் (INV7)' : 'Add Stock (INV7)'}
+                {isTa ? 'இருப்பு சேர்த்தல்' : 'Add Harvest Stock'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowAddStockModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1111,33 +1120,42 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 <span className="text-[#14532D]">{activeProduct.quantity + actionQty} {activeProduct.unit}</span>
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] cursor-pointer"
-              >
-                {isTa ? 'சேர்த்தலை உறுதிசெய்' : 'Confirm Stock Addition'}
-              </button>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddStockModal(false)}
+                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
+                >
+                  {isTa ? 'ரத்து' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 h-12 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isTa ? 'சேர்த்தலை உறுதிசெய்' : 'Confirm Stock Addition'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          SCREEN INV8: REMOVE STOCK MODAL (Non-negative enforcement)
+          REMOVE STOCK MODAL (Non-negative enforcement)
           ========================================================================= */}
       {showRemoveStockModal && activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#C8923A]">
-                {isTa ? 'இருப்பு கழித்தல் / விற்பனை (INV8)' : 'Remove Stock / Dispatch (INV8)'}
+              <h3 className="text-base font-bold text-[#8C5D17]">
+                {isTa ? 'இருப்பு கழித்தல் / விநியோகம்' : 'Remove Stock / Dispatch'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowRemoveStockModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1185,33 +1203,42 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 </span>
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#C8923A] text-white text-xs font-bold hover:bg-[#A67527] cursor-pointer"
-              >
-                {isTa ? 'கழித்தலை உறுதிசெய்' : 'Confirm Stock Removal'}
-              </button>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRemoveStockModal(false)}
+                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
+                >
+                  {isTa ? 'ரத்து' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isTa ? 'கழித்தலை உறுதிசெய்' : 'Confirm Stock Removal'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          SCREEN INV9: ADJUST STOCK MODAL (Recount Verification)
+          ADJUST STOCK MODAL (Physical Audit Verification)
           ========================================================================= */}
       {showAdjustModal && activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#1C2420]">
-                {isTa ? 'நேரடி இருப்பு சரிசெய்தல் (INV9)' : 'Physical Count Adjustment (INV9)'}
+                {isTa ? 'நேரடி இருப்பு தணிக்கை' : 'Physical Stock Audit Adjustment'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowAdjustModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1253,33 +1280,42 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#1C2420] text-white text-xs font-bold hover:bg-black cursor-pointer"
-              >
-                {isTa ? 'தணிக்கை திருத்தத்தை உறுதிசெய்' : 'Record Audit Adjustment'}
-              </button>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdjustModal(false)}
+                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
+                >
+                  {isTa ? 'ரத்து' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 h-12 rounded-xl bg-[#1C2420] text-white text-xs font-bold hover:bg-black shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isTa ? 'தணிக்கை உறுதிசெய்' : 'Record Audit Adjustment'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          SCREEN INV10: TRANSFER LOCATION MODAL
+          TRANSFER LOCATION MODAL
           ========================================================================= */}
       {showTransferModal && activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#1C2420]">
-                {isTa ? 'கிடங்கு இடமாற்றம் (INV10)' : 'Transfer Between Locations (INV10)'}
+                {isTa ? 'கிடங்கு இடமாற்றம்' : 'Transfer Between Locations'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowTransferModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1322,33 +1358,42 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] cursor-pointer"
-              >
-                {isTa ? 'இடமாற்றத்தை உறுதிசெய்' : 'Confirm Location Transfer'}
-              </button>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTransferModal(false)}
+                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
+                >
+                  {isTa ? 'ரத்து' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isTa ? 'இடமாற்றத்தை உறுதிசெய்' : 'Confirm Location Transfer'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          SCREEN INV12: CONFIGURE LOW-STOCK THRESHOLD MODAL
+          CONFIGURE LOW-STOCK THRESHOLD MODAL
           ========================================================================= */}
       {showThresholdModal && activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#1C2420]">
-                {isTa ? 'குறைந்த இருப்பு எச்சரிக்கை வரம்பு (INV12)' : 'Configure Low-Stock Alert (INV12)'}
+                {isTa ? 'குறைந்த இருப்பு எச்சரிக்கை வரம்பு' : 'Configure Low-Stock Alert'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowThresholdModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1372,19 +1417,28 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] cursor-pointer"
-              >
-                {isTa ? 'வரம்பை சேமி' : 'Save Alert Threshold'}
-              </button>
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowThresholdModal(false)}
+                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
+                >
+                  {isTa ? 'ரத்து' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isTa ? 'வரம்பை சேமி' : 'Save Alert Threshold'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          SCREEN INV11: PRODUCT TRANSACTION HISTORY MODAL
+          PRODUCT TRANSACTION HISTORY MODAL
           ========================================================================= */}
       {showHistoryModal && activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1392,16 +1446,16 @@ export const FarmerDryInventoryPage: React.FC = () => {
             <div className="flex items-center justify-between pb-2 border-b border-[#DFE4DC]">
               <div>
                 <h3 className="text-base font-bold text-[#1C2420]">
-                  {isTa ? 'முழு பரிவர்த்தனை பதிவேடு' : 'Stock Movement Ledger (INV11)'}
+                  {isTa ? 'முழு பரிவர்த்தனை பதிவேடு' : 'Stock Movement Ledger'}
                 </h3>
                 <span className="text-xs text-[#5B6660]">{activeProduct.name} ({activeProduct.batchLotId})</span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1444,9 +1498,9 @@ export const FarmerDryInventoryPage: React.FC = () => {
               onClick={() => {
                 showToast(isTa ? 'CSV பதிவேடு பதிவிறக்கப்பட்டது!' : 'Transaction ledger exported to CSV format.', 'success');
               }}
-              className="w-full py-2.5 rounded-xl border border-[#DFE4DC] bg-white text-xs font-bold text-[#1C2420] hover:bg-[#F7F4EC] flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-bold text-[#1C2420] hover:bg-[#F7F4EC] flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
             >
-              <FileSpreadsheet size={15} />
+              <FileSpreadsheet size={16} />
               <span>{isTa ? 'CSV கோப்பாக பதிவிறக்கு' : 'Export Movement Ledger (CSV)'}</span>
             </button>
           </div>

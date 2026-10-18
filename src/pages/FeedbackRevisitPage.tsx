@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const FeedbackRevisitPage: React.FC = () => {
@@ -35,19 +36,19 @@ export const FeedbackRevisitPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col relative w-full pt-28 pb-24 bg-[#f4fbf3] min-h-screen">
+    <div className="flex flex-col relative w-full pt-28 pb-32 bg-[#F4FBF3] min-h-screen">
       <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             to="/farmer/home"
-            className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#161d18] shadow-xs border border-[#dfe4dc]"
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#14532D] shadow-xs border border-[#DFE4DC] hover:bg-[#EEF6ED] transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-[#1e5e3a]">Feedback &amp; Repeat Booking</h1>
-            <p className="text-xs text-[#404941]">
+            <h1 className="text-xl font-bold text-[#14532D]">Feedback &amp; Repeat Booking</h1>
+            <p className="text-xs text-[#526055]">
               Post-harvest storage evaluation for {booking.bookingCode}
             </p>
           </div>
@@ -131,13 +132,13 @@ export const FeedbackRevisitPage: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full h-12 rounded-xl bg-[#1e5e3a] text-white text-xs font-bold hover:bg-[#16462b] active:scale-98 transition-all shadow-xs"
+                className="w-full h-12 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#166534] active:scale-98 transition-all shadow-xs"
               >
                 Submit Review
               </button>
             </form>
           ) : (
-            <div className="p-3 bg-[#eef6ed] rounded-xl text-center text-xs text-[#006c49] font-bold">
+            <div className="p-3 bg-[#eef6ed] rounded-xl text-center text-xs text-[#14532D] font-bold">
               ✓ Your feedback has been recorded on the verified blockchain ledger.
             </div>
           )}
@@ -147,7 +148,7 @@ export const FeedbackRevisitPage: React.FC = () => {
         {isSatisfied && (
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#dfe4dc] space-y-3 animate-in fade-in">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[22px] text-[#006c49]">replay</span>
+              <RotateCcw className="w-5 h-5 text-[#14532D]" />
               <div>
                 <h3 className="text-sm font-bold text-[#161d18]">Book This Chamber Again</h3>
                 <p className="text-xs text-[#404941]">Pre-fill with your favorite lot settings</p>
@@ -163,7 +164,7 @@ export const FeedbackRevisitPage: React.FC = () => {
                 <span>Recommended Crop:</span>
                 <span>{booking.cropName} (Shivam Variety)</span>
               </div>
-              <div className="flex justify-between text-[#006c49] font-bold">
+              <div className="flex justify-between text-[#14532D] font-bold">
                 <span>Published Rate:</span>
                 <span>₹{booking.dailyRateCrate} / crate / day (Guaranteed)</span>
               </div>
@@ -175,17 +176,17 @@ export const FeedbackRevisitPage: React.FC = () => {
                   setRevisitScheduled(true);
                   showToast('Pickup reminder scheduled on WhatsApp/SMS!', 'info');
                 }}
-                className="flex-1 h-11 bg-[#e9f0e8] text-[#1e5e3a] text-xs font-bold rounded-xl hover:bg-[#e3eae2]"
+                className="w-1/2 h-12 bg-[#EEF6ED] text-[#14532D] text-xs font-bold rounded-xl hover:bg-[#e3eae2] transition-colors"
               >
                 {revisitScheduled ? '✓ Reminder Scheduled' : 'Set Harvest Reminder'}
               </button>
 
               <button
                 onClick={handleBookAgain}
-                className="flex-1 h-11 bg-[#1e5e3a] text-white text-xs font-bold rounded-xl hover:bg-[#16462b] shadow-xs flex items-center justify-center gap-1"
+                className="w-1/2 h-12 bg-[#14532D] text-white text-xs font-bold rounded-xl hover:bg-[#166534] shadow-xs flex items-center justify-center gap-2 transition-colors"
               >
                 <span>Reserve Next Slot</span>
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
