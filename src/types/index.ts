@@ -248,11 +248,77 @@ export interface AIInsight {
 
 export interface InventoryAlert {
   id: string;
-  facilityId: string;
+  facilityId?: string;
   alertType: 'low_stock' | 'near_expiry' | 'expired' | 'capacity_warning' | 'damage_detected';
   title: string;
   message: string;
   severity: 'info' | 'warning' | 'critical';
   isResolved: boolean;
+  createdAt: string;
+  productId?: string;
+}
+
+export type DryCropCategory = 'rice' | 'wheat' | 'pulses' | 'grains' | 'oilseeds' | 'spices' | 'other';
+export type DryCropUnit = 'kg' | 'quintal' | 'bag' | 'tonne';
+
+export interface DryInventoryTransaction {
+  id: string;
+  productId: string;
+  type: 'initial' | 'add' | 'remove' | 'adjust' | 'transfer';
+  quantity: number;
+  unit: DryCropUnit;
+  previousBalance: number;
+  newBalance: number;
+  reason: string;
+  date: string;
+  authorizedBy: string;
+  receiptNumber: string;
+  sourceLocation?: string;
+  destinationLocation?: string;
+  notes?: string;
+}
+
+export interface DryProduct {
+  id: string;
+  productCode: string;
+  name: string;
+  nameTa: string;
+  category: DryCropCategory;
+  variety?: string;
+  quantity: number;
+  unit: DryCropUnit;
+  storageLocation: string;
+  batchLotId: string;
+  harvestDate?: string;
+  expiryDate?: string;
+  supplier?: string;
+  unitCost?: number;
+  totalValue?: number;
+  lowStockThreshold: number;
+  isArchived: boolean;
+  status: 'in_stock' | 'low_stock' | 'depleted' | 'archived';
+  notes?: string;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  transactions: DryInventoryTransaction[];
+}
+
+export interface PickupRequest {
+  id: string;
+  requestCode: string;
+  bookingCode: string;
+  batchCode: string;
+  cropName: string;
+  farmerName: string;
+  facilityId: string;
+  facilityName: string;
+  requestedKg: number;
+  requestedCrates: number;
+  collectionDate: string;
+  collectionTime: string;
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  notes?: string;
+  rejectionReason?: string;
   createdAt: string;
 }

@@ -66,9 +66,9 @@ export const Header: React.FC<HeaderProps> = ({ customTitle, customStatus }) => 
             {isHome ? (
               <button
                 type="button"
-                onClick={() => navigate('/service-selection')}
+                onClick={() => navigate('/')}
                 className="flex items-center gap-2 group active:scale-95 transition-transform cursor-pointer focus:outline-none"
-                aria-label="AgriSync - Service Selection"
+                aria-label="AgriSync Home"
                 title="AgriSync"
               >
                 <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white border border-[#0F3D2E]/10 shadow-[0_2px_8px_rgba(15,61,46,0.05)] flex items-center justify-center p-1 overflow-hidden flex-shrink-0">
@@ -218,3 +218,4 @@ export const Header: React.FC<HeaderProps> = ({ customTitle, customStatus }) => 
     </header>
   );
 };
+

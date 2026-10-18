@@ -7,9 +7,10 @@ import { ToastContainer } from './components/ToastContainer';
 
 // Public & Auth Pages
 import { LandingPage } from './pages/LandingPage';
+import { SplashScreen } from './pages/SplashScreen';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { ServiceSelectionPage } from './pages/ServiceSelectionPage';
 
 // Farmer Pages
 import { FarmerHomePage } from './pages/FarmerHomePage';
@@ -19,6 +20,7 @@ import { BookingWizardPage } from './pages/BookingWizardPage';
 import { BookingConfirmationPage } from './pages/BookingConfirmationPage';
 import { FarmerBookingsPage } from './pages/FarmerBookingsPage';
 import { FarmerInventoryPage } from './pages/FarmerInventoryPage';
+import { FarmerDryInventoryPage } from './pages/FarmerDryInventoryPage';
 import { CapacityConflictPage } from './pages/CapacityConflictPage';
 import { AIPriceArbitragePage } from './pages/AIPriceArbitragePage';
 import { LiveInspectionPage } from './pages/LiveInspectionPage';
@@ -50,10 +52,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const hideChrome =
     location.pathname === '/' ||
+    location.pathname === '/splash' ||
+    location.pathname === '/onboarding' ||
     location.pathname === '/welcome' ||
     location.pathname === '/login' ||
-    location.pathname === '/register' ||
-    location.pathname === '/service-selection';
+    location.pathname === '/register';
 
   const pageRendersOwnHeader = location.pathname === '/capacity-conflict';
 
@@ -76,11 +79,12 @@ export function App() {
         <Layout>
           <Routes>
             {/* Public & Auth */}
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<SplashScreen />} />
             <Route path="/welcome" element={<LandingPage />} />
+            <Route path="/splash" element={<SplashScreen />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/service-selection" element={<ServiceSelectionPage />} />
 
             {/* Farmer Core Workflows */}
             <Route path="/farmer/home" element={<FarmerHomePage />} />
@@ -90,6 +94,7 @@ export function App() {
             <Route path="/booking/:bookingCode/confirmation" element={<BookingConfirmationPage />} />
             <Route path="/farmer/bookings" element={<FarmerBookingsPage />} />
             <Route path="/farmer/inventory" element={<FarmerInventoryPage />} />
+            <Route path="/farmer/dry-inventory" element={<FarmerDryInventoryPage />} />
             <Route path="/capacity-conflict" element={<CapacityConflictPage />} />
             <Route path="/ai-arbitrage" element={<AIPriceArbitragePage />} />
             <Route path="/live-inspection/:batchCode" element={<LiveInspectionPage />} />

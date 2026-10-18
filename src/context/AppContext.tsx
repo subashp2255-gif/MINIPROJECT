@@ -15,6 +15,11 @@ import type {
   CapacityLedger,
   AIInsight,
   InventoryAlert,
+  DryProduct,
+  DryInventoryTransaction,
+  DryCropCategory,
+  DryCropUnit,
+  PickupRequest,
 } from '../types';
 import {
   INITIAL_FACILITIES,
@@ -25,6 +30,8 @@ import {
   INITIAL_NOTIFICATIONS,
   MOCK_INSPECTIONS,
   MOCK_REVIEWS,
+  INITIAL_DRY_PRODUCTS,
+  INITIAL_PICKUP_REQUESTS,
 } from '../lib/mockData';
 import { translations } from '../lib/translations';
 
@@ -57,6 +64,8 @@ interface AppContextType {
   reviews: FeedbackReview[];
   alerts: InventoryAlert[];
   toasts: ToastAlert[];
+  dryProducts: DryProduct[];
+  pickupRequests: PickupRequest[];
 
   showToast: (message: string, type?: ToastAlert['type']) => void;
   dismissToast: (id: string) => void;
@@ -67,6 +76,21 @@ interface AppContextType {
   resolveConflict: (choice: ConflictNotice['selectedOption']) => void;
   scheduleInspection: (batchCode: string, cropName: string, facilityId: string, date: string, time: string) => void;
   submitReview: (bookingCode: string, rating: number, comment: string, isComplaint?: boolean, complaintCat?: string) => void;
+  confirmWeightVerification: (bookingCode: string) => void;
+  reportWeightDiscrepancy: (bookingCode: string, reason: string, observedKg?: number) => void;
+
+  // Pickup Requests (CS13 to CS15)
+  requestPickup: (params: {
+    batchCode: string;
+    requestedKg: number;
+    requestedCrates: number;
+    collectionDate: string;
+    collectionTime: string;
+    notes?: string;
+  }) => PickupRequest | null;
+  approvePickupRequest: (requestId: string) => boolean;
+  rejectPickupRequest: (requestId: string, reason: string) => boolean;
+  completePickupWithdrawal: (requestId: string, actualKg: number, actualCrates: number, recipientName?: string) => boolean;
 
   // Independent Inventory Module (NO booking required)
   registerBatch: (batchData: {
@@ -103,6 +127,32 @@ interface AppContextType {
   adjustStock: (batchCode: string, adjustedKg: number, adjustedCrates: number, reason: string, condition?: string) => boolean;
   archiveBatch: (batchCode: string) => boolean;
   verifyIntake: (bookingCode: string, verifiedKg: number, verifiedCrates: number, chamberName: string) => void;
+
+  // Enhanced Dry-Goods Inventory Module (INV1 to INV14 - Rice, Wheat, Pulses, Grains)
+  addDryProduct: (productData: {
+    name: string;
+    nameTa?: string;
+    category: DryCropCategory;
+    variety?: string;
+    quantity: number;
+    unit: DryCropUnit;
+    storageLocation: string;
+    batchLotId?: string;
+    harvestDate?: string;
+    expiryDate?: string;
+    supplier?: string;
+    unitCost?: number;
+    lowStockThreshold?: number;
+    notes?: string;
+    imageUrl?: string;
+  }) => DryProduct;
+  addStockDryProduct: (productId: string, quantity: number, unit: DryCropUnit, reason: string, notes?: string) => boolean;
+  removeStockDryProduct: (productId: string, quantity: number, reason: string, notes?: string) => boolean;
+  adjustStockDryProduct: (productId: string, verifiedQuantity: number, reason: string) => boolean;
+  transferDryProduct: (productId: string, quantity: number, destinationLocation: string, reason?: string) => boolean;
+  archiveDryProduct: (productId: string, force?: boolean) => boolean;
+  restoreDryProduct: (productId: string) => boolean;
+  updateDryProductThreshold: (productId: string, threshold: number) => boolean;
 
   // Capacity & Analytics
   calculateCapacityLedger: (facilityId?: string) => CapacityLedger;
@@ -178,6 +228,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [inspections, setInspections] = useState<InspectionRequest[]>(MOCK_INSPECTIONS);
   const [reviews, setReviews] = useState<FeedbackReview[]>(MOCK_REVIEWS);
   const [toasts, setToasts] = useState<ToastAlert[]>([]);
+  const [dryProducts, setDryProducts] = useState<DryProduct[]>(() => {
+    const saved = localStorage.getItem('srs_dry_products');
+    return saved ? JSON.parse(saved) : INITIAL_DRY_PRODUCTS;
+  });
+  const [pickupRequests, setPickupRequests] = useState<PickupRequest[]>(() => {
+    const saved = localStorage.getItem('srs_pickup_requests');
+    return saved ? JSON.parse(saved) : INITIAL_PICKUP_REQUESTS;
+  });
 
   const [alerts] = useState<InventoryAlert[]>([
     {
@@ -225,6 +283,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('srs_movements', JSON.stringify(movements));
   }, [movements]);
+
+  useEffect(() => {
+    localStorage.setItem('srs_dry_products', JSON.stringify(dryProducts));
+  }, [dryProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('srs_pickup_requests', JSON.stringify(pickupRequests));
+  }, [pickupRequests]);
 
   const user = USER_PROFILES[role];
 
@@ -859,6 +925,588 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return insights;
   };
 
+  const confirmWeightVerification = (bookingCode: string) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.bookingCode === bookingCode ? { ...b, status: 'in_storage' } : b
+      )
+    );
+    const notif: NotificationItem = {
+      id: `notif-${Date.now()}`,
+      title: 'Weight Verified & Crop Stored',
+      titleTa: 'எடை உறுதிசெய்யப்பட்டது • பயிர் சேமிக்கப்பட்டது',
+      message: `Booking ${bookingCode} weight confirmed by farmer. Crop transferred to active stored lot.`,
+      messageTa: `${bookingCode} முன்பதிவின் எடை உறுதிசெய்யப்பட்டு செயலில் உள்ள சேமிப்பில் சேர்க்கப்பட்டது.`,
+      timestamp: 'Just now',
+      type: 'booking',
+      read: false,
+      linkUrl: '/farmer/bookings',
+    };
+    setNotifications((prev) => [notif, ...prev]);
+    showToast(language === 'ta' ? 'எடை சரிபார்ப்பு உறுதி செய்யப்பட்டது!' : 'Intake weight verified successfully!', 'success');
+  };
+
+  const reportWeightDiscrepancy = (bookingCode: string, reason: string, observedKg?: number) => {
+    const detail = observedKg !== undefined ? ` (Scale Weight: ${observedKg} kg)` : '';
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.bookingCode === bookingCode
+          ? { ...b, status: 'needs_resolution', notes: `Weight discrepancy flagged: ${reason}${detail}` }
+          : b
+      )
+    );
+    const notif: NotificationItem = {
+      id: `notif-${Date.now()}`,
+      title: 'Weight Discrepancy Case Raised',
+      titleTa: 'எடை வேறுபாடு வழக்கு பதிவு செய்யப்பட்டது',
+      message: `Discrepancy reported for ${bookingCode}: "${reason}"${detail}. Facility manager notified for joint inspection.`,
+      messageTa: `${bookingCode} க்கான எடை வேறுபாடு பதிவு செய்யப்பட்டது: "${reason}"${detail}. மேலாளர் விசாரணைக்கு அனுப்பப்பட்டது.`,
+      timestamp: 'Just now',
+      type: 'conflict',
+      read: false,
+      linkUrl: '/farmer/bookings',
+    };
+    setNotifications((prev) => [notif, ...prev]);
+    showToast(language === 'ta' ? 'எடை முரண்பாடு விசாரணைக்கு அனுப்பப்பட்டது.' : 'Discrepancy reported. Case under review by manager.', 'warning');
+  };
+
+  const requestPickup = (params: {
+    batchCode: string;
+    requestedKg: number;
+    requestedCrates: number;
+    collectionDate: string;
+    collectionTime: string;
+    notes?: string;
+  }): PickupRequest | null => {
+    const batch = batches.find((b) => b.batchCode === params.batchCode);
+    if (!batch) {
+      showToast('Batch not found', 'error');
+      return null;
+    }
+    if (params.requestedKg <= 0) {
+      showToast('Requested pickup quantity must be positive', 'error');
+      return null;
+    }
+    if (params.requestedKg > batch.currentStockKg) {
+      showToast(`Cannot request ${params.requestedKg} kg: only ${batch.currentStockKg} kg available in storage!`, 'error');
+      return null;
+    }
+
+    const newReq: PickupRequest = {
+      id: `pk-req-${Date.now()}`,
+      requestCode: `#REQ-PK-${Math.floor(1000 + Math.random() * 9000)}`,
+      bookingCode: batch.bookingId || `#SRS-REF-${Math.floor(1000 + Math.random() * 9000)}`,
+      batchCode: params.batchCode,
+      cropName: batch.cropName,
+      farmerName: user.name,
+      facilityId: batch.facilityId,
+      facilityName: batch.facilityName,
+      requestedKg: params.requestedKg,
+      requestedCrates: params.requestedCrates,
+      collectionDate: params.collectionDate,
+      collectionTime: params.collectionTime,
+      status: 'pending',
+      notes: params.notes,
+      createdAt: new Date().toISOString(),
+    };
+
+    setPickupRequests((prev) => [newReq, ...prev]);
+
+    const notif: NotificationItem = {
+      id: `notif-${Date.now()}`,
+      title: 'Pickup Request Submitted',
+      titleTa: 'பயிர் மீட்பு கோரிக்கை சமர்ப்பிக்கப்பட்டது',
+      message: `Pickup request ${newReq.requestCode} for ${params.requestedKg} kg ${batch.cropName} awaiting owner schedule confirmation.`,
+      messageTa: `${params.requestedKg} கிலோ ${batch.cropName} மீட்பு கோரிக்கை ${newReq.requestCode} உரிமையாளர் ஒப்புதலுக்கு அனுப்பப்பட்டது.`,
+      timestamp: 'Just now',
+      type: 'pickup',
+      read: false,
+      linkUrl: '/farmer/inventory',
+    };
+    setNotifications((prev) => [notif, ...prev]);
+    showToast(language === 'ta' ? 'மீட்பு கோரிக்கை அனுப்பப்பட்டது!' : 'Pickup request submitted successfully!', 'success');
+    return newReq;
+  };
+
+  const approvePickupRequest = (requestId: string): boolean => {
+    setPickupRequests((prev) =>
+      prev.map((r) => (r.id === requestId ? { ...r, status: 'approved' } : r))
+    );
+    const req = pickupRequests.find((r) => r.id === requestId);
+    if (req) {
+      const notif: NotificationItem = {
+        id: `notif-${Date.now()}`,
+        title: 'Pickup Approved • Ready for Gate Inbound',
+        titleTa: 'மீட்பு அங்கீகரிக்கப்பட்டது • வாயில் வருகை தயார்',
+        message: `Pickup request ${req.requestCode} (${req.requestedKg} kg) approved. Show gate pass at collection terminal.`,
+        messageTa: `${req.requestCode} (${req.requestedKg} கிலோ) மீட்பு அனுமதிக்கப்பட்டது. முனையத்தில் வாயில் பாஸ் காட்டவும்.`,
+        timestamp: 'Just now',
+        type: 'pickup',
+        read: false,
+        linkUrl: '/farmer/inventory',
+      };
+      setNotifications((prev) => [notif, ...prev]);
+    }
+    showToast('Pickup request approved! Gate pass dispatch code activated.', 'success');
+    return true;
+  };
+
+  const rejectPickupRequest = (requestId: string, reason: string): boolean => {
+    setPickupRequests((prev) =>
+      prev.map((r) => (r.id === requestId ? { ...r, status: 'rejected', rejectionReason: reason } : r))
+    );
+    showToast(`Pickup rejected: ${reason}`, 'info');
+    return true;
+  };
+
+  const completePickupWithdrawal = (
+    requestId: string,
+    actualKg: number,
+    actualCrates: number,
+    recipientName?: string
+  ): boolean => {
+    const req = pickupRequests.find((r) => r.id === requestId);
+    if (!req) return false;
+
+    const ok = performPartialWithdrawal(
+      req.batchCode,
+      actualKg,
+      actualCrates,
+      `Physical Gate Release against ${req.requestCode} (Recipient: ${recipientName || req.farmerName})`
+    );
+
+    if (ok) {
+      setPickupRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, status: 'completed' } : r))
+      );
+      showToast(`Physical withdrawal completed for ${actualKg} kg. Completion receipt generated!`, 'success');
+      return true;
+    }
+    return false;
+  };
+
+  const addDryProduct = (productData: {
+    name: string;
+    nameTa?: string;
+    category: DryCropCategory;
+    variety?: string;
+    quantity: number;
+    unit: DryCropUnit;
+    storageLocation: string;
+    batchLotId?: string;
+    harvestDate?: string;
+    expiryDate?: string;
+    supplier?: string;
+    unitCost?: number;
+    lowStockThreshold?: number;
+    notes?: string;
+    imageUrl?: string;
+  }): DryProduct => {
+    const id = `dry-${Date.now()}`;
+    const productCode = `#DRY-TN-${Math.floor(100 + Math.random() * 900)}`;
+    const lowThresh = productData.lowStockThreshold ?? (productData.unit === 'kg' ? 100 : 5);
+    const initialQty = Number(productData.quantity) || 0;
+    const isLow = initialQty <= lowThresh;
+
+    const newProd: DryProduct = {
+      id,
+      productCode,
+      name: productData.name,
+      nameTa: productData.nameTa || productData.name,
+      category: productData.category,
+      variety: productData.variety,
+      quantity: initialQty,
+      unit: productData.unit,
+      storageLocation: productData.storageLocation,
+      batchLotId: productData.batchLotId || `#LOT-${Math.floor(1000 + Math.random() * 9000)}`,
+      harvestDate: productData.harvestDate,
+      expiryDate: productData.expiryDate,
+      supplier: productData.supplier,
+      unitCost: productData.unitCost,
+      totalValue: productData.unitCost ? productData.unitCost * initialQty : undefined,
+      lowStockThreshold: lowThresh,
+      isArchived: false,
+      status: isLow ? 'low_stock' : 'in_stock',
+      notes: productData.notes,
+      imageUrl: productData.imageUrl || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&q=80',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      transactions: [
+        {
+          id: `dry-tx-${Date.now()}`,
+          productId: id,
+          type: 'initial',
+          quantity: initialQty,
+          unit: productData.unit,
+          previousBalance: 0,
+          newBalance: initialQty,
+          reason: 'Initial Product Registration & Stock Intake',
+          date: new Date().toISOString().split('T')[0],
+          authorizedBy: user.name,
+          receiptNumber: `#DRY-REC-${Math.floor(1000 + Math.random() * 9000)}`,
+        },
+      ],
+    };
+
+    setDryProducts((prev) => [newProd, ...prev]);
+
+    if (isLow) {
+      const notif: NotificationItem = {
+        id: `notif-${Date.now()}`,
+        title: `Low Stock Alert: ${newProd.name}`,
+        titleTa: `குறைந்த இருப்பு எச்சரிக்கை: ${newProd.nameTa}`,
+        message: `${newProd.name} stock (${initialQty} ${newProd.unit}) is at or below threshold (${lowThresh} ${newProd.unit}).`,
+        messageTa: `${newProd.nameTa} இருப்பு (${initialQty} ${newProd.unit}) அனுமதிக்கப்பட்ட அளவை விட குறைவாக உள்ளது.`,
+        timestamp: 'Just now',
+        type: 'system',
+        read: false,
+        linkUrl: '/farmer/dry-inventory',
+      };
+      setNotifications((prev) => [notif, ...prev]);
+    }
+
+    showToast(language === 'ta' ? `${newProd.nameTa} பதிவு செய்யப்பட்டு சேமிக்கப்பட்டது!` : `${newProd.name} registered with ${initialQty} ${newProd.unit}!`, 'success');
+    return newProd;
+  };
+
+  const addStockDryProduct = (
+    productId: string,
+    quantity: number,
+    unit: DryCropUnit,
+    reason: string,
+    notes?: string
+  ): boolean => {
+    const prod = dryProducts.find((p) => p.id === productId);
+    if (!prod) {
+      showToast('Product not found', 'error');
+      return false;
+    }
+    if (quantity <= 0) {
+      showToast('Quantity added must be greater than zero', 'error');
+      return false;
+    }
+
+    const prevBal = prod.quantity;
+    const newBal = prevBal + quantity;
+    const isStillLow = newBal <= prod.lowStockThreshold;
+
+    const tx: DryInventoryTransaction = {
+      id: `dry-tx-${Date.now()}`,
+      productId,
+      type: 'add',
+      quantity,
+      unit,
+      previousBalance: prevBal,
+      newBalance: newBal,
+      reason: reason || 'Stock addition (Harvest / Purchase)',
+      date: new Date().toISOString().split('T')[0],
+      authorizedBy: user.name,
+      receiptNumber: `#DRY-ADD-${Math.floor(1000 + Math.random() * 9000)}`,
+      notes,
+    };
+
+    setDryProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              quantity: newBal,
+              status: isStillLow ? 'low_stock' : 'in_stock',
+              totalValue: p.unitCost ? p.unitCost * newBal : p.totalValue,
+              updatedAt: new Date().toISOString(),
+              transactions: [tx, ...p.transactions],
+            }
+          : p
+      )
+    );
+
+    showToast(`Added ${quantity} ${unit} to ${prod.name}. New balance: ${newBal} ${unit}`, 'success');
+    return true;
+  };
+
+  const removeStockDryProduct = (
+    productId: string,
+    quantity: number,
+    reason: string,
+    notes?: string
+  ): boolean => {
+    const prod = dryProducts.find((p) => p.id === productId);
+    if (!prod) {
+      showToast('Product not found', 'error');
+      return false;
+    }
+    if (quantity <= 0) {
+      showToast('Quantity to remove must be greater than zero', 'error');
+      return false;
+    }
+    if (quantity > prod.quantity) {
+      showToast(`Cannot remove ${quantity} ${prod.unit}: only ${prod.quantity} ${prod.unit} available in stock!`, 'error');
+      return false;
+    }
+
+    const prevBal = prod.quantity;
+    const newBal = prevBal - quantity;
+    const isLow = newBal <= prod.lowStockThreshold && newBal > 0;
+    const isDepleted = newBal === 0;
+
+    const tx: DryInventoryTransaction = {
+      id: `dry-tx-${Date.now()}`,
+      productId,
+      type: 'remove',
+      quantity,
+      unit: prod.unit,
+      previousBalance: prevBal,
+      newBalance: newBal,
+      reason: reason || 'Dispatch / Mandi Sale / Usage',
+      date: new Date().toISOString().split('T')[0],
+      authorizedBy: user.name,
+      receiptNumber: `#DRY-REM-${Math.floor(1000 + Math.random() * 9000)}`,
+      notes,
+    };
+
+    setDryProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              quantity: newBal,
+              status: isDepleted ? 'depleted' : isLow ? 'low_stock' : 'in_stock',
+              totalValue: p.unitCost ? p.unitCost * newBal : p.totalValue,
+              updatedAt: new Date().toISOString(),
+              transactions: [tx, ...p.transactions],
+            }
+          : p
+      )
+    );
+
+    if (isLow && prevBal > prod.lowStockThreshold) {
+      const notif: NotificationItem = {
+        id: `notif-${Date.now()}`,
+        title: `Low Stock Threshold Crossed: ${prod.name}`,
+        titleTa: `குறைந்த இருப்பு வரம்பு தாண்டியது: ${prod.nameTa}`,
+        message: `${prod.name} has reached ${newBal} ${prod.unit} (Threshold: ${prod.lowStockThreshold} ${prod.unit}). Restock recommended.`,
+        messageTa: `${prod.nameTa} இருப்பு ${newBal} ${prod.unit}-ஆக குறைந்துள்ளது. மறுஇருப்பு தேவை.`,
+        timestamp: 'Just now',
+        type: 'system',
+        read: false,
+        linkUrl: '/farmer/dry-inventory',
+      };
+      setNotifications((prev) => [notif, ...prev]);
+    }
+
+    showToast(`Removed ${quantity} ${prod.unit} from ${prod.name}. Remaining: ${newBal} ${prod.unit}`, 'success');
+    return true;
+  };
+
+  const adjustStockDryProduct = (
+    productId: string,
+    verifiedQuantity: number,
+    reason: string
+  ): boolean => {
+    const prod = dryProducts.find((p) => p.id === productId);
+    if (!prod) return false;
+    if (verifiedQuantity < 0) {
+      showToast('Verified balance cannot be negative', 'error');
+      return false;
+    }
+
+    const prevBal = prod.quantity;
+    const diff = verifiedQuantity - prevBal;
+    const isLow = verifiedQuantity <= prod.lowStockThreshold && verifiedQuantity > 0;
+    const isDepleted = verifiedQuantity === 0;
+
+    const tx: DryInventoryTransaction = {
+      id: `dry-tx-${Date.now()}`,
+      productId,
+      type: 'adjust',
+      quantity: Math.abs(diff),
+      unit: prod.unit,
+      previousBalance: prevBal,
+      newBalance: verifiedQuantity,
+      reason: reason || 'Physical count verification adjustment',
+      date: new Date().toISOString().split('T')[0],
+      authorizedBy: user.name,
+      receiptNumber: `#DRY-ADJ-${Math.floor(1000 + Math.random() * 9000)}`,
+    };
+
+    setDryProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              quantity: verifiedQuantity,
+              status: isDepleted ? 'depleted' : isLow ? 'low_stock' : 'in_stock',
+              totalValue: p.unitCost ? p.unitCost * verifiedQuantity : p.totalValue,
+              updatedAt: new Date().toISOString(),
+              transactions: [tx, ...p.transactions],
+            }
+          : p
+      )
+    );
+
+    showToast(`Adjusted ${prod.name} balance from ${prevBal} to ${verifiedQuantity} ${prod.unit}. Reason: ${reason}`, 'info');
+    return true;
+  };
+
+  const transferDryProduct = (
+    productId: string,
+    quantity: number,
+    destinationLocation: string,
+    reason?: string
+  ): boolean => {
+    const prod = dryProducts.find((p) => p.id === productId);
+    if (!prod) return false;
+    if (quantity <= 0 || quantity > prod.quantity) {
+      showToast('Invalid transfer quantity', 'error');
+      return false;
+    }
+
+    const sourceLoc = prod.storageLocation;
+
+    if (quantity === prod.quantity) {
+      const tx: DryInventoryTransaction = {
+        id: `dry-tx-${Date.now()}`,
+        productId,
+        type: 'transfer',
+        quantity,
+        unit: prod.unit,
+        previousBalance: prod.quantity,
+        newBalance: prod.quantity,
+        sourceLocation: sourceLoc,
+        destinationLocation,
+        reason: reason || `Relocation from ${sourceLoc} to ${destinationLocation}`,
+        date: new Date().toISOString().split('T')[0],
+        authorizedBy: user.name,
+        receiptNumber: `#DRY-TRF-${Math.floor(1000 + Math.random() * 9000)}`,
+      };
+
+      setDryProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId
+            ? {
+                ...p,
+                storageLocation: destinationLocation,
+                updatedAt: new Date().toISOString(),
+                transactions: [tx, ...p.transactions],
+              }
+            : p
+        )
+      );
+    } else {
+      const prevBal = prod.quantity;
+      const remainingBal = prevBal - quantity;
+
+      const txSource: DryInventoryTransaction = {
+        id: `dry-tx-${Date.now()}`,
+        productId,
+        type: 'transfer',
+        quantity,
+        unit: prod.unit,
+        previousBalance: prevBal,
+        newBalance: remainingBal,
+        sourceLocation: sourceLoc,
+        destinationLocation,
+        reason: reason || `Partial transfer to ${destinationLocation}`,
+        date: new Date().toISOString().split('T')[0],
+        authorizedBy: user.name,
+        receiptNumber: `#DRY-TRF-${Math.floor(1000 + Math.random() * 9000)}`,
+      };
+
+      setDryProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId
+            ? {
+                ...p,
+                quantity: remainingBal,
+                updatedAt: new Date().toISOString(),
+                transactions: [txSource, ...p.transactions],
+              }
+            : p
+        )
+      );
+
+      addDryProduct({
+        name: prod.name,
+        nameTa: prod.nameTa,
+        category: prod.category,
+        variety: prod.variety,
+        quantity,
+        unit: prod.unit,
+        storageLocation: destinationLocation,
+        batchLotId: `${prod.batchLotId}-B`,
+        harvestDate: prod.harvestDate,
+        expiryDate: prod.expiryDate,
+        supplier: prod.supplier,
+        unitCost: prod.unitCost,
+        lowStockThreshold: prod.lowStockThreshold,
+        notes: `Transferred from ${sourceLoc}`,
+        imageUrl: prod.imageUrl,
+      });
+    }
+
+    showToast(`Transferred ${quantity} ${prod.unit} to ${destinationLocation}. Total stock preserved.`, 'success');
+    return true;
+  };
+
+  const archiveDryProduct = (productId: string, force: boolean = false): boolean => {
+    const prod = dryProducts.find((p) => p.id === productId);
+    if (!prod) return false;
+
+    if (prod.quantity > 0 && !force) {
+      showToast(`Warning: Product has ${prod.quantity} ${prod.unit} active stock! Confirm archive if deliberate.`, 'warning');
+      return false;
+    }
+
+    setDryProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? { ...p, isArchived: true, status: 'archived', updatedAt: new Date().toISOString() }
+          : p
+      )
+    );
+    showToast(`Archived ${prod.name}. Item preserved in historical records.`, 'info');
+    return true;
+  };
+
+  const restoreDryProduct = (productId: string): boolean => {
+    const prod = dryProducts.find((p) => p.id === productId);
+    if (!prod) return false;
+
+    setDryProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              isArchived: false,
+              status: p.quantity === 0 ? 'depleted' : p.quantity <= p.lowStockThreshold ? 'low_stock' : 'in_stock',
+              updatedAt: new Date().toISOString(),
+            }
+          : p
+      )
+    );
+    showToast(`Restored ${prod.name} to active inventory list.`, 'success');
+    return true;
+  };
+
+  const updateDryProductThreshold = (productId: string, threshold: number): boolean => {
+    if (threshold < 0) return false;
+    setDryProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === productId) {
+          const isLow = p.quantity <= threshold && p.quantity > 0;
+          return {
+            ...p,
+            lowStockThreshold: threshold,
+            status: p.quantity === 0 ? 'depleted' : isLow ? 'low_stock' : 'in_stock',
+          };
+        }
+        return p;
+      })
+    );
+    showToast(`Low-stock alert threshold set to ${threshold}`, 'info');
+    return true;
+  };
+
   const refreshTelemetry = () => {
     setFacilities((prev) =>
       prev.map((f) => ({
@@ -898,18 +1546,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         reviews,
         alerts,
         toasts,
+        dryProducts,
+        pickupRequests,
         showToast,
         dismissToast,
         createBooking,
         cancelBooking,
         resolveConflict,
         verifyIntake,
+        confirmWeightVerification,
+        reportWeightDiscrepancy,
+        requestPickup,
+        approvePickupRequest,
+        rejectPickupRequest,
+        completePickupWithdrawal,
         registerBatch,
         recordIntake,
         performPartialWithdrawal,
         transferStock,
         adjustStock,
         archiveBatch,
+        addDryProduct,
+        addStockDryProduct,
+        removeStockDryProduct,
+        adjustStockDryProduct,
+        transferDryProduct,
+        archiveDryProduct,
+        restoreDryProduct,
+        updateDryProductThreshold,
         calculateCapacityLedger,
         getAIInsights,
         login,

@@ -11,13 +11,16 @@ import {
   HelpCircle,
   ShieldAlert,
   ArrowRightLeft,
+  Bell,
+  User,
 } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
-  const { language, role, showToast } = useApp();
+  const { language, role, notifications, showToast } = useApp();
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   const isTa = language === 'ta';
+  const hasUnread = notifications.some((n) => !n.read);
 
   const handleCallHelpline = () => {
     showToast(
@@ -70,7 +73,7 @@ export const BottomNav: React.FC = () => {
                   <div className="relative flex flex-col items-center">
                     <Snowflake size={19} strokeWidth={isActive ? 2.4 : 1.8} />
                     <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'அறைகள்' : 'Storage'}
+                      {isTa ? 'குளிர்சாதனம்' : 'Cold Storage'}
                     </span>
                     {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
                   </div>
@@ -78,29 +81,10 @@ export const BottomNav: React.FC = () => {
               </NavLink>
 
               <NavLink
-                to="/farmer/bookings"
+                to="/farmer/dry-inventory"
                 className={({ isActive }) =>
                   `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <CalendarCheck size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'பதிவுகள்' : 'Bookings'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/farmer/inventory"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
+                    isActive ? 'text-[#C8923A] font-bold' : 'text-[#64748B] font-medium'
                   }`
                 }
               >
@@ -108,15 +92,15 @@ export const BottomNav: React.FC = () => {
                   <div className="relative flex flex-col items-center">
                     <Package size={19} strokeWidth={isActive ? 2.4 : 1.8} />
                     <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'இருப்பு' : 'Inventory'}
+                      {isTa ? 'தானிய இருப்பு' : 'My Inventory'}
                     </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#C8923A] absolute -bottom-1.5" />}
                   </div>
                 )}
               </NavLink>
 
               <NavLink
-                to="/ai-arbitrage"
+                to="/activity"
                 className={({ isActive }) =>
                   `flex flex-col items-center justify-center flex-1 h-full select-none ${
                     isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
@@ -125,9 +109,31 @@ export const BottomNav: React.FC = () => {
               >
                 {({ isActive }) => (
                   <div className="relative flex flex-col items-center">
-                    <Sparkles size={19} strokeWidth={isActive ? 2.4 : 1.8} />
+                    <Bell size={19} strokeWidth={isActive ? 2.4 : 1.8} />
+                    {hasUnread && (
+                      <span className="w-2 h-2 rounded-full bg-red-500 absolute -top-0.5 right-1 ring-2 ring-white" />
+                    )}
                     <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'விலை AI' : 'Prices'}
+                      {isTa ? 'அறிவிப்புகள்' : 'Alerts'}
+                    </span>
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
+                  </div>
+                )}
+              </NavLink>
+
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
+                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <div className="relative flex flex-col items-center">
+                    <User size={19} strokeWidth={isActive ? 2.4 : 1.8} />
+                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
+                      {isTa ? 'சுயவிவரம்' : 'Profile'}
                     </span>
                     {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
                   </div>
