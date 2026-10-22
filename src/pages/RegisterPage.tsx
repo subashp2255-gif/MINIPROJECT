@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import type { UserRole } from '../types';
 import { User, Phone, ArrowRight, CheckSquare, Square, RefreshCw } from 'lucide-react';
+import { AppLogo } from '../components/AppLogo';
 
 export const RegisterPage: React.FC = () => {
   const { registerUser, language, setLanguage, showToast } = useApp();
@@ -70,14 +71,11 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F4FBF3] flex flex-col justify-center items-center px-4 py-8">
+    <div className="w-full min-h-screen bg-[#F7F4EC] flex flex-col justify-center items-center px-4 py-8">
       <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-8 border border-[#DFE4DC] shadow-lg space-y-6">
-        <div className="text-center space-y-1.5">
-          <Link to="/" className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#0F3D2E]/10 p-1 flex items-center justify-center shadow-xs">
-              <img src="/agrisync-icon.png" alt="AgriSync" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-extrabold text-xl tracking-tight text-[#134E35]">AgriSync</span>
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-flex items-center justify-center mb-1">
+            <AppLogo size={44} />
           </Link>
           <h1 className="text-xl sm:text-2xl font-bold text-[#0F3D2E]">
             {isTa ? 'புதிய கணக்கை உருவாக்கவும்' : 'Create Farmer / Owner Account'}

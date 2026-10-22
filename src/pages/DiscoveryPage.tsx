@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Search, MapPin, Zap, Calculator, X, Volume2 } from 'lucide-react';
+import { Button } from '../components/ui/Button';
 
 export const DiscoveryPage: React.FC = () => {
   const { facilities, language, createBooking, showToast } = useApp();
@@ -237,14 +238,16 @@ export const DiscoveryPage: React.FC = () => {
                   </div>
 
                   {/* One Primary "Book slot" Button */}
-                  <div className="pt-1">
-                    <button
+                  <div className="pt-2">
+                    <Button
                       type="button"
+                      variant="primary"
+                      size="md"
+                      fullWidth
                       onClick={() => handleBookDirect(facility.id)}
-                      className="btn-primary w-full"
                     >
                       {isTa ? 'இடத்தை முன்பதிவு செய்' : 'Book slot'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -342,13 +345,15 @@ export const DiscoveryPage: React.FC = () => {
             </div>
 
             {/* Reserve Slot Button */}
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="md"
+              fullWidth
               onClick={handleConfirmReservation}
-              className="btn-primary w-full"
             >
               {isTa ? 'இடத்தை முன்பதிவு செய்' : 'Reserve slot'}
-            </button>
+            </Button>
           </div>
         </div>
       )}

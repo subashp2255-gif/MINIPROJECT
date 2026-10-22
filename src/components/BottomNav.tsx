@@ -1,378 +1,169 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import {
   Home,
   Snowflake,
   Package,
-  CalendarCheck,
-  BarChart3,
-  Sparkles,
-  HelpCircle,
-  ShieldAlert,
-  ArrowRightLeft,
   Bell,
   User,
+  BarChart3,
+  CalendarCheck,
+  ArrowRightLeft,
+  Sparkles,
+  ShieldAlert,
 } from 'lucide-react';
 
-export const BottomNav: React.FC = () => {
-  const { language, role, notifications, showToast } = useApp();
-  const [showHelpModal, setShowHelpModal] = useState(false);
+interface BottomTabProps {
+  to: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  label: string;
+  badgeCount?: number;
+}
 
-  const isTa = language === 'ta';
-  const hasUnread = notifications.some((n) => !n.read);
-
-  const handleCallHelpline = () => {
-    showToast(
-      isTa
-        ? 'உழவர் உதவி மையத்துடன் இணைக்கப்படுகிறது: 1800-425-1556'
-        : 'Connecting to Kisan AgriSync Helpline: 1800-425-1556',
-      'info'
-    );
-    setShowHelpModal(false);
-  };
+const BottomTab: React.FC<BottomTabProps> = ({
+  to,
+  icon: Icon,
+  label,
+  badgeCount,
+}) => {
+  const location = useLocation();
+  const isActive = location.pathname === to || (to !== '/farmer/home' && location.pathname.startsWith(to));
 
   return (
-    <>
-      <nav
-        className="fixed bottom-2.5 sm:bottom-3 left-0 right-0 z-40 max-w-[500px] mx-auto px-3.5 sm:px-4 pointer-events-none pb-safe"
-        aria-label="Bottom Navigation"
+    <NavLink
+      to={to}
+      className="flex flex-col items-center justify-center flex-1 h-full select-none py-1 group focus:outline-hidden"
+      aria-label={label}
+    >
+      <div
+        className={`relative flex flex-col items-center justify-center px-3 py-1 rounded-xl transition-all duration-150 ${
+          isActive ? 'bg-[#E7F5EE] text-[#14532D]' : 'text-[#5B6660] hover:text-[#14532D]'
+        }`}
       >
-        <div className="h-14 sm:h-15 w-full bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-full shadow-[0_4px_24px_rgba(15,61,46,0.14)] border border-[#E2E8F0] flex items-center justify-around px-2 pointer-events-auto">
-          {/* FARMER PERSONA NAVIGATION */}
-          {role === 'farmer' && (
-            <>
-              <NavLink
-                to="/farmer/home"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Home size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'முகப்பு' : 'Home'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/discovery"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Snowflake size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'குளிர்சாதனம்' : 'Cold Storage'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/farmer/dry-inventory"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#C8923A] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Package size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'தானிய இருப்பு' : 'My Inventory'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#C8923A] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/activity"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Bell size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    {hasUnread && (
-                      <span className="w-2 h-2 rounded-full bg-red-500 absolute -top-0.5 right-1 ring-2 ring-white" />
-                    )}
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'அறிவிப்புகள்' : 'Alerts'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/profile"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <User size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'சுயவிவரம்' : 'Profile'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-            </>
-          )}
-
-          {/* STORAGE OWNER PERSONA NAVIGATION */}
-          {role === 'owner' && (
-            <>
-              <NavLink
-                to="/owner/dashboard"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <BarChart3 size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'கண்ணோட்டம்' : 'Overview'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/owner/bookings"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <CalendarCheck size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'முன்பதிவுகள்' : 'Bookings'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/owner/inventory"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Package size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'சரக்கிருப்பு' : 'Inventory'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/owner/inventory/history"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <ArrowRightLeft size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'வரலாறு' : 'History'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/owner/ai-insights"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Sparkles size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'AI எச்சரிக்கை' : 'AI Insights'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-            </>
-          )}
-
-          {/* ADMIN PERSONA NAVIGATION */}
-          {role === 'admin' && (
-            <>
-              <NavLink
-                to="/admin/dashboard"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <BarChart3 size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'நிர்வாகம்' : 'Admin'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/discovery"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Snowflake size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'மையங்கள்' : 'Facilities'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/owner/inventory"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <Package size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'இருப்பு' : 'Inventory'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink
-                to="/admin/audit"
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center flex-1 h-full select-none ${
-                    isActive ? 'text-[#14532D] font-bold' : 'text-[#64748B] font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <div className="relative flex flex-col items-center">
-                    <ShieldAlert size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-                    <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-                      {isTa ? 'தணிக்கை' : 'Audit'}
-                    </span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute -bottom-1.5" />}
-                  </div>
-                )}
-              </NavLink>
-            </>
-          )}
-
-          {/* Help Button */}
-          <button
-            type="button"
-            onClick={() => setShowHelpModal(true)}
-            className="flex flex-col items-center justify-center flex-1 h-full select-none text-[#64748B] hover:text-[#14532D] transition-colors cursor-pointer"
-            aria-label="Help"
-          >
-            <HelpCircle size={19} strokeWidth={1.8} />
-            <span className="text-[10px] sm:text-[11px] leading-none mt-1">
-              {isTa ? 'உதவி' : 'Help'}
+        {/* 24px Icon Container with Badge */}
+        <div className="relative flex items-center justify-center w-6 h-6 shrink-0">
+          <Icon size={24} strokeWidth={isActive ? 2.3 : 1.8} />
+          {badgeCount && badgeCount > 0 ? (
+            <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-[#B5472B] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+              {badgeCount > 9 ? '9+' : badgeCount}
             </span>
-          </button>
+          ) : null}
         </div>
-      </nav>
 
-      {/* Help Modal */}
-      {showHelpModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-[#DFE4DC]">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#14532D] flex items-center gap-2">
-                <HelpCircle size={20} className="text-[#C8923A]" />
-                <span>{isTa ? 'உழவர் உதவி மையம்' : 'AgriSync Kisan Helpline'}</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowHelpModal(false)}
-                className="text-[#64748B] hover:text-black font-bold p-1"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="text-xs text-[#5B6660]">
-              {isTa
-                ? 'தமிழ்நாடு குளிர்பதன கிடங்கு ஒதுக்கீடு, வாயில் எடைப்பதிவு மற்றும் விலை முன்னறிவிப்பு விபரங்களுக்கு எங்களை தொடர்பு கொள்ளவும்.'
-                : 'Direct support for Tamil Nadu solar cold chain booking, weighing bridge gate pass, and Mandi price forecasting.'}
-            </p>
-            <div className="p-3 rounded-xl bg-[#F4FBF3] border border-[#AFF2C2] text-xs font-semibold text-[#14532D]">
-              📞 Toll Free: 1800-425-1556 (Tamil / English)
-            </div>
-            <button
-              type="button"
-              onClick={handleCallHelpline}
-              className="w-full h-11 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] transition-colors"
-            >
-              {isTa ? 'அழைக்கவும்' : 'Call Support Line'}
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+        {/* 12px Label (always on one line, active in forest green) */}
+        <span
+          className={`text-[12px] leading-tight mt-1 whitespace-nowrap truncate max-w-[68px] ${
+            isActive ? 'font-bold text-[#14532D]' : 'font-medium text-[#5B6660]'
+          }`}
+        >
+          {label}
+        </span>
+      </div>
+    </NavLink>
+  );
+};
+
+export const BottomNav: React.FC = () => {
+  const { language, role, notifications } = useApp();
+  const isTa = language === 'ta';
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  return (
+    <nav
+      className="fixed bottom-3 left-0 right-0 z-40 max-w-[430px] mx-auto px-3 pointer-events-none pb-safe"
+      aria-label="Bottom Navigation"
+    >
+      <div className="h-16 w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_8px_32px_rgba(15,61,46,0.12)] border border-[#DFE4DC] flex items-center justify-around px-1 pointer-events-auto">
+        {/* FARMER PERSONA: Exactly 5 Tabs */}
+        {role === 'farmer' && (
+          <>
+            <BottomTab
+              to="/farmer/home"
+              icon={Home}
+              label={isTa ? 'முகப்பு' : 'Home'}
+            />
+            <BottomTab
+              to="/discovery"
+              icon={Snowflake}
+              label={isTa ? 'குளிர்சாதனம்' : 'Cold Storage'}
+            />
+            <BottomTab
+              to="/farmer/dry-inventory"
+              icon={Package}
+              label={isTa ? 'இருப்பு' : 'Inventory'}
+            />
+            <BottomTab
+              to="/activity"
+              icon={Bell}
+              label={isTa ? 'அறிவிப்புகள்' : 'Alerts'}
+              badgeCount={unreadCount}
+            />
+            <BottomTab
+              to="/profile"
+              icon={User}
+              label={isTa ? 'சுயவிவரம்' : 'Profile'}
+            />
+          </>
+        )}
+
+        {/* OWNER PERSONA: 5 Tabs */}
+        {role === 'owner' && (
+          <>
+            <BottomTab
+              to="/owner/dashboard"
+              icon={BarChart3}
+              label={isTa ? 'கண்ணோட்டம்' : 'Overview'}
+            />
+            <BottomTab
+              to="/owner/bookings"
+              icon={CalendarCheck}
+              label={isTa ? 'முன்பதிவுகள்' : 'Bookings'}
+            />
+            <BottomTab
+              to="/owner/inventory"
+              icon={Package}
+              label={isTa ? 'சரக்கிருப்பு' : 'Inventory'}
+            />
+            <BottomTab
+              to="/owner/inventory/history"
+              icon={ArrowRightLeft}
+              label={isTa ? 'வரலாறு' : 'History'}
+            />
+            <BottomTab
+              to="/owner/ai-insights"
+              icon={Sparkles}
+              label={isTa ? 'AI ஆய்வு' : 'Insights'}
+            />
+          </>
+        )}
+
+        {/* ADMIN PERSONA: 4 Tabs */}
+        {role === 'admin' && (
+          <>
+            <BottomTab
+              to="/admin/dashboard"
+              icon={BarChart3}
+              label={isTa ? 'நிர்வாகம்' : 'Admin'}
+            />
+            <BottomTab
+              to="/discovery"
+              icon={Snowflake}
+              label={isTa ? 'மையங்கள்' : 'Facilities'}
+            />
+            <BottomTab
+              to="/owner/inventory"
+              icon={Package}
+              label={isTa ? 'இருப்பு' : 'Inventory'}
+            />
+            <BottomTab
+              to="/admin/audit"
+              icon={ShieldAlert}
+              label={isTa ? 'தணிக்கை' : 'Audit'}
+            />
+          </>
+        )}
+      </div>
+    </nav>
   );
 };

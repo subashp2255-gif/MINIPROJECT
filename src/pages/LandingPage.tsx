@@ -10,6 +10,7 @@ import {
   Scale,
   CheckCircle2,
 } from 'lucide-react';
+import { AppLogo } from '../components/AppLogo';
 
 export const LandingPage: React.FC = () => {
   const { language, setLanguage, setRole } = useApp();
@@ -17,24 +18,13 @@ export const LandingPage: React.FC = () => {
   const isTa = language === 'ta';
 
   return (
-    <div className="w-full min-h-screen bg-[#F4FBF3] text-[#1C2420] flex flex-col">
+    <div className="w-full min-h-screen bg-[#F7F4EC] text-[#1C2420] flex flex-col">
       {/* Top Public Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#DFE4DC] px-4 py-3 sm:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#0F3D2E]/10 shadow-xs flex items-center justify-center p-1 overflow-hidden">
-              <img src="/agrisync-icon.png" alt="AgriSync" className="w-full h-full object-contain" />
-            </div>
-            <div className="flex flex-col text-left">
-              <div className="flex items-center font-extrabold text-xl leading-none tracking-tight">
-                <span className="text-[#134E35]">Agri</span>
-                <span className="text-[#368638]">Sync</span>
-              </div>
-              <span className="text-[10px] font-medium text-[#5B6660] tracking-tight">
-                {isTa ? 'சூரிய மின் குளிர்பதன அமைப்பு' : 'Solar Cold Chain & Inventory'}
-              </span>
-            </div>
+            <AppLogo size={36} showSubtitle={true} />
           </Link>
 
           {/* Center Navigation Links */}
@@ -326,8 +316,8 @@ export const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer id="about" className="mt-auto bg-white border-t border-[#DFE4DC] px-4 py-8 text-center text-xs text-[#5B6660]">
         <div className="max-w-4xl mx-auto space-y-3">
-          <div className="flex items-center justify-center gap-2 font-bold text-[#134E35] text-base">
-            <img src="/agrisync-icon.png" alt="AgriSync" className="w-6 h-6 object-contain" />
+          <div className="flex items-center justify-center gap-2 font-bold text-[#14532D] text-base">
+            <AppLogo size={24} showText={false} />
             <span>AgriSync Platform</span>
           </div>
           <p>

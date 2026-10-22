@@ -5,21 +5,22 @@ import {
   Package,
   Plus,
   Search,
-  ArrowRight,
   TrendingDown,
   TrendingUp,
   AlertTriangle,
-  CheckCircle2,
   MapPin,
-  History,
   MoveRight,
   Archive,
-  RefreshCw,
   X,
-  FileSpreadsheet,
   Edit2,
-  ShieldCheck,
+  MoreVertical,
+  CheckCircle2,
 } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Tag, statusToTagVariant } from '../components/ui/Tag';
+import { CropThumbnail } from '../components/ui/CropThumbnail';
+import { Input } from '../components/ui/Input';
+import { formatDate, formatQuantity, formatCurrency } from '../lib/formatters';
 
 export const FarmerDryInventoryPage: React.FC = () => {
   const {
@@ -30,7 +31,6 @@ export const FarmerDryInventoryPage: React.FC = () => {
     adjustStockDryProduct,
     transferDryProduct,
     archiveDryProduct,
-    restoreDryProduct,
     updateDryProductThreshold,
     language,
     showToast,
@@ -38,14 +38,15 @@ export const FarmerDryInventoryPage: React.FC = () => {
 
   const isTa = language === 'ta';
 
-  // State for Navigation / Filters
+  // Navigation / Filter States
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);
   const [onlyLowStock, setOnlyLowStock] = useState(false);
 
-  // Selected Product for Details View (INV6)
-  const [activeProduct, setActiveProduct] = useState<DryProduct | null>(dryProducts[0] || null);
+  // Selected Product for Details Bottom Sheet
+  const [activeProduct, setActiveProduct] = useState<DryProduct | null>(null);
+  const [showDetailSheet, setShowDetailSheet] = useState(false);
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -56,8 +57,9 @@ export const FarmerDryInventoryPage: React.FC = () => {
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState<DryProduct | null>(null);
+  const [showOverflowMenu, setShowOverflowMenu] = useState(false);
 
-  // Form states for Add Product (INV2)
+  // Form states for Add Product
   const [newProdName, setNewProdName] = useState('');
   const [newProdNameTa, setNewProdNameTa] = useState('');
   const [newProdCategory, setNewProdCategory] = useState<DryCropCategory>('rice');
@@ -92,14 +94,27 @@ export const FarmerDryInventoryPage: React.FC = () => {
     { name: 'Finger Millet (Ragi)', nameTa: 'கேழ்வரகு (ராகி)', category: 'grains' as DryCropCategory, unit: 'quintal' as DryCropUnit },
   ];
 
-  // Category summary calculations (Screen INV1 - separated by units)
-  const unitBreakdown = useMemo(() => {
+  // Summary Card: Total lots, Total weight (single unit, converted), Low-stock count
+  const summary = useMemo(() => {
     const active = dryProducts.filter((p) => !p.isArchived);
-    const quintals = active.filter((p) => p.unit === 'quintal').reduce((sum, p) => sum + p.quantity, 0);
-    const kgs = active.filter((p) => p.unit === 'kg').reduce((sum, p) => sum + p.quantity, 0);
-    const bags = active.filter((p) => p.unit === 'bag').reduce((sum, p) => sum + p.quantity, 0);
-    const tonnes = active.filter((p) => p.unit === 'tonne').reduce((sum, p) => sum + p.quantity, 0);
-    return { quintals, kgs, bags, tonnes, totalItems: active.length };
+    const totalLots = active.length;
+    const lowStockCount = active.filter((p) => p.status === 'low_stock').length;
+
+    // Convert all to equivalent quintals for unified weight representation:
+    // 1 quintal = 100 kg, 1 bag = 50 kg = 0.5 quintal, 1 tonne = 10 quintals
+    let totalWeightInQuintals = 0;
+    active.forEach((p) => {
+      if (p.unit === 'quintal') totalWeightInQuintals += p.quantity;
+      else if (p.unit === 'kg') totalWeightInQuintals += p.quantity / 100;
+      else if (p.unit === 'bag') totalWeightInQuintals += p.quantity * 0.5;
+      else if (p.unit === 'tonne') totalWeightInQuintals += p.quantity * 10;
+    });
+
+    return {
+      totalLots,
+      totalWeight: Math.round(totalWeightInQuintals),
+      lowStockCount,
+    };
   }, [dryProducts]);
 
   // Filtered Products List
@@ -125,7 +140,7 @@ export const FarmerDryInventoryPage: React.FC = () => {
     });
   }, [dryProducts, showArchived, onlyLowStock, selectedCategory, searchQuery]);
 
-  // Recent movements across all dry products
+  // Recent movements
   const allRecentMovements = useMemo(() => {
     const list = dryProducts.flatMap((p) =>
       p.transactions.map((tx) => ({
@@ -137,7 +152,6 @@ export const FarmerDryInventoryPage: React.FC = () => {
     return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
   }, [dryProducts]);
 
-  // Select Preset Handler
   const handleSelectPreset = (crop: typeof PRESET_CROPS[0]) => {
     setNewProdName(crop.name);
     setNewProdNameTa(crop.nameTa);
@@ -145,7 +159,13 @@ export const FarmerDryInventoryPage: React.FC = () => {
     setNewProdUnit(crop.unit);
   };
 
-  // Submit Add Product (INV2, INV3, INV4)
+  const handleOpenDetail = (p: DryProduct) => {
+    setActiveProduct(p);
+    setShowDetailSheet(true);
+    setShowOverflowMenu(false);
+  };
+
+  // Submit Add Product
   const handleAddProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const errors: Record<string, string> = {};
@@ -186,7 +206,6 @@ export const FarmerDryInventoryPage: React.FC = () => {
     setShowConfirmModal(created);
     setActiveProduct(created);
 
-    // Reset fields
     setNewProdName('');
     setNewProdNameTa('');
     setNewProdVariety('');
@@ -194,29 +213,28 @@ export const FarmerDryInventoryPage: React.FC = () => {
     setNewProdNotes('');
   };
 
-  // Submit Add Stock (INV7)
+  // Submit Add Stock
   const handleAddStockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProduct) return;
     if (actionQty <= 0) {
-      showToast('Quantity must be positive', 'error');
+      showToast(isTa ? 'அளவு நேர்மறையாக இருக்க வேண்டும்' : 'Quantity must be positive', 'error');
       return;
     }
     const success = addStockDryProduct(activeProduct.id, actionQty, activeProduct.unit, actionReason, actionNotes);
     if (success) {
       setShowAddStockModal(false);
-      // Refresh activeProduct
       const updated = dryProducts.find((p) => p.id === activeProduct.id);
       if (updated) setActiveProduct(updated);
     }
   };
 
-  // Submit Remove Stock (INV8)
+  // Submit Remove Stock
   const handleRemoveStockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProduct) return;
     if (actionQty <= 0) {
-      showToast('Quantity must be positive', 'error');
+      showToast(isTa ? 'அளவு நேர்மறையாக இருக்க வேண்டும்' : 'Quantity must be positive', 'error');
       return;
     }
     if (actionQty > activeProduct.quantity) {
@@ -231,12 +249,12 @@ export const FarmerDryInventoryPage: React.FC = () => {
     }
   };
 
-  // Submit Adjust Stock (INV9)
+  // Submit Adjust Stock
   const handleAdjustSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProduct) return;
     if (verifiedQty < 0) {
-      showToast('Verified balance cannot be negative', 'error');
+      showToast(isTa ? 'எண்ணிக்கை பூஜ்ஜியத்தை விட குறையக் கூடாது' : 'Verified balance cannot be negative', 'error');
       return;
     }
     const success = adjustStockDryProduct(activeProduct.id, verifiedQty, actionReason);
@@ -247,16 +265,16 @@ export const FarmerDryInventoryPage: React.FC = () => {
     }
   };
 
-  // Submit Transfer Stock (INV10)
+  // Submit Transfer Stock
   const handleTransferSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProduct) return;
     if (actionQty <= 0 || actionQty > activeProduct.quantity) {
-      showToast('Invalid transfer quantity', 'error');
+      showToast(isTa ? 'தவறான இடமாற்ற அளவு' : 'Invalid transfer quantity', 'error');
       return;
     }
     if (!transferDest.trim()) {
-      showToast('Destination location required', 'error');
+      showToast(isTa ? 'சேருமிடம் தேவை' : 'Destination location required', 'error');
       return;
     }
     const success = transferDryProduct(activeProduct.id, actionQty, transferDest.trim(), actionReason);
@@ -267,7 +285,7 @@ export const FarmerDryInventoryPage: React.FC = () => {
     }
   };
 
-  // Submit Threshold Update (INV12)
+  // Submit Threshold Update
   const handleThresholdSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProduct) return;
@@ -277,532 +295,564 @@ export const FarmerDryInventoryPage: React.FC = () => {
     if (updated) setActiveProduct(updated);
   };
 
-  // Archive / Restore Handler (INV13)
+  // Archive / Restore Handler
   const handleArchive = (product: DryProduct) => {
     if (product.quantity > 0) {
       if (confirm(`Notice: ${product.name} still has ${product.quantity} ${product.unit} remaining. Archive anyway?`)) {
         archiveDryProduct(product.id, true);
+        setShowDetailSheet(false);
       }
     } else {
       archiveDryProduct(product.id, false);
+      setShowDetailSheet(false);
     }
   };
 
   return (
-    <div className="w-full pb-32 text-[#1C2420]">
-      {/* Top Banner */}
-      <div className="bg-[#A67527] text-white px-4 pt-5 pb-6 rounded-b-3xl shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center p-2">
-              <Package size={22} className="text-white" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-200 block">
-                {isTa ? 'தனித்தனி தானிய இருப்பு அமைப்பு' : 'Decoupled Dry Goods Module'}
-              </span>
-              <h1 className="text-lg font-extrabold leading-tight">
-                {isTa ? 'எனது தானிய இருப்பு மேலாண்மை' : 'Enhanced Dry Inventory'}
-              </h1>
-            </div>
+    <div className="w-full pb-28 pt-3 px-4 text-[#1C2420] select-none space-y-5">
+      {/* =========================================================================
+          STANDARD HEADER ACTION BAR (Replacing the previous gold banner)
+          ========================================================================= */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-[#FEF3C7] text-[#8C5D17] flex items-center justify-center shrink-0">
+            <Package size={22} strokeWidth={2} />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-[#1C2420] truncate font-ui">
+              {isTa ? 'தானிய இருப்பு மேலாண்மை' : 'Dry Harvest Inventory'}
+            </h1>
+            <p className="text-xs text-[#5B6660] truncate">
+              {isTa ? 'நெல், பருப்பு, கோதுமை மற்றும் சிறுதானியங்கள்' : 'Paddy, pulses, wheat and millets'}
+            </p>
+          </div>
+        </div>
+
+        <Button
+          variant="primary"
+          size="md"
+          icon={<Plus size={16} />}
+          onClick={() => {
+            setNewProdQty(10);
+            setShowAddModal(true);
+          }}
+        >
+          {isTa ? 'பயிர் சேர்க்க' : 'Add product'}
+        </Button>
+      </div>
+
+      {/* =========================================================================
+          SUMMARY CARD: 3 Equal Tiles with Consistent Label / Number / Caption
+          ========================================================================= */}
+      <div className="p-4 rounded-2xl bg-white border border-[#DFE4DC] shadow-[0_2px_8px_rgba(15,61,46,0.05)] space-y-3">
+        <div className="grid grid-cols-3 gap-2">
+          {/* Tile 1: Total Lots */}
+          <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-center flex flex-col justify-between h-[88px]">
+            <span className="text-xs text-[#5B6660] font-medium block truncate">
+              {isTa ? 'மொத்த வகைகள்' : 'Total lots'}
+            </span>
+            <span className="font-serif-hero text-2xl font-bold text-[#1C2420] tabular-nums leading-none">
+              {summary.totalLots}
+            </span>
+            <span className="text-xs text-[#5B6660] truncate">
+              {isTa ? 'செயலில் உள்ளவை' : 'Active batches'}
+            </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setNewProdQty(10);
-              setShowAddModal(true);
-            }}
-            className="py-2 px-3.5 rounded-xl bg-white text-[#8C5D17] text-xs font-bold hover:bg-amber-100 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-          >
-            <Plus size={16} />
-            <span>{isTa ? 'பயிர் சேர்க்க' : 'Add Product'}</span>
-          </button>
+          {/* Tile 2: Total Weight (Single unit, converted to quintals) */}
+          <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-center flex flex-col justify-between h-[88px]">
+            <span className="text-xs text-[#5B6660] font-medium block truncate">
+              {isTa ? 'மொத்த எடை' : 'Total weight'}
+            </span>
+            <span className="font-serif-hero text-2xl font-bold text-[#1C2420] tabular-nums leading-none">
+              {summary.totalWeight}
+            </span>
+            <span className="text-xs text-[#5B6660] truncate">
+              {isTa ? 'குவிண்டால்' : 'quintals'}
+            </span>
+          </div>
+
+          {/* Tile 3: Low-stock Count */}
+          <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-center flex flex-col justify-between h-[88px]">
+            <span className="text-xs text-[#5B6660] font-medium block truncate">
+              {isTa ? 'குறைந்த இருப்பு' : 'Low stock'}
+            </span>
+            <span className={`font-serif-hero text-2xl font-bold tabular-nums leading-none ${summary.lowStockCount > 0 ? 'text-[#C2410C]' : 'text-[#14532D]'}`}>
+              {summary.lowStockCount}
+            </span>
+            <span className="text-xs text-[#5B6660] truncate">
+              {summary.lowStockCount > 0 ? (isTa ? 'கவனம் தேவை' : 'Needs attention') : (isTa ? 'போதுமானது' : 'Optimal')}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="px-3.5 sm:px-4 pt-4 space-y-5 -mt-3">
-        {/* =========================================================================
-            SCREEN INV1: TOTAL RECORDED STOCK BY UNIT & METRICS (No conflating units)
-            ========================================================================= */}
-        <section className="card-dashboard p-4 sm:p-5 space-y-3" aria-label="Stock Breakdown Summary">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#5B6660]">
-              {isTa ? 'பதிவு செய்யப்பட்ட தானிய இருப்பு' : 'Recorded Dry Harvest Summary'}
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#14532D] bg-[#E7F5EE] px-2 py-0.5 rounded-full">
-              <ShieldCheck size={12} />
-              <span>{unitBreakdown.totalItems} {isTa ? 'விளைபொருட்கள்' : 'Active Lots'}</span>
-            </span>
-          </div>
-
-          {/* Unit Separation Grid */}
-          <div className="grid grid-cols-3 gap-2.5 pt-1">
-            <div className="p-3 rounded-2xl bg-[#F7F4EC] border border-[#DFE4DC] text-center">
-              <span className="text-xs text-[#5B6660] block font-medium">Quintals</span>
-              <span className="font-serif-hero text-2xl font-bold text-[#1C2420] mt-0.5 block">
-                {unitBreakdown.quintals}
-              </span>
-              <span className="text-[10px] text-[#5B6660]">{isTa ? 'குவிண்டால்' : 'Paddy & Millet'}</span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-[#F7F4EC] border border-[#DFE4DC] text-center">
-              <span className="text-xs text-[#5B6660] block font-medium">Kilograms</span>
-              <span className="font-serif-hero text-2xl font-bold text-[#1C2420] mt-0.5 block">
-                {unitBreakdown.kgs}
-              </span>
-              <span className="text-[10px] text-[#5B6660]">{isTa ? 'கிலோ' : 'Pulses & Dal'}</span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-[#F7F4EC] border border-[#DFE4DC] text-center">
-              <span className="text-xs text-[#5B6660] block font-medium">Gunny Bags</span>
-              <span className="font-serif-hero text-2xl font-bold text-[#1C2420] mt-0.5 block">
-                {unitBreakdown.bags}
-              </span>
-              <span className="text-[10px] text-[#5B6660]">{isTa ? 'மூட்டைகள்' : 'Wheat & Grains'}</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Search & Category Filter Bar */}
-        <section className="space-y-2.5">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-3 text-[#5B6660]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isTa ? 'பயிர் பெயர், தொகுதி, இடம் தேட...' : 'Search product, batch lot, location...'}
-                className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#DFE4DC] bg-white text-xs font-medium focus:border-[#C8923A] outline-hidden shadow-2xs"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-2.5 text-[#5B6660] hover:text-[#1C2420]"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
+      {/* =========================================================================
+          SEARCH & EDGE-TO-EDGE FILTER CHIPS (Low stock as a filter chip)
+          ========================================================================= */}
+      <div className="space-y-3">
+        {/* Search input */}
+        <div className="relative w-full">
+          <Search size={18} className="absolute left-3.5 top-3.5 text-[#5B6660] pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={isTa ? 'பயிர் பெயர், தொகுதி, இடம் தேட...' : 'Search crop name, lot ID, location...'}
+            className="w-full h-12 pl-11 pr-9 rounded-xl border border-[#DFE4DC] bg-white text-base text-[#1C2420] placeholder:text-[#5B6660]/60 outline-hidden focus:border-[#14532D] focus:ring-2 focus:ring-[#14532D]/20 shadow-[0_2px_8px_rgba(15,61,46,0.04)]"
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={() => setOnlyLowStock(!onlyLowStock)}
-              className={`h-10 px-3 rounded-xl text-xs font-bold border transition-all flex items-center gap-1 cursor-pointer ${
-                onlyLowStock
-                  ? 'bg-[#B5472B] text-white border-[#B5472B]'
-                  : 'bg-white text-[#5B6660] border-[#DFE4DC] hover:bg-[#F7F4EC]'
-              }`}
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-3.5 text-[#5B6660] hover:text-[#1C2420]"
             >
-              <AlertTriangle size={14} />
-              <span>{isTa ? 'குறைந்த இருப்பு' : 'Low Stock'}</span>
+              <X size={16} />
             </button>
-          </div>
+          )}
+        </div>
+
+        {/* Edge-to-edge scrolling filter chips */}
+        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar flex items-center gap-2">
+          {/* Low stock filter chip */}
+          <button
+            type="button"
+            onClick={() => setOnlyLowStock(!onlyLowStock)}
+            className={`h-8 px-3 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              onlyLowStock
+                ? 'bg-[#C2410C] text-white shadow-xs'
+                : 'bg-white text-[#5B6660] border border-[#DFE4DC] hover:bg-[#F7F4EC]'
+            }`}
+          >
+            <AlertTriangle size={13} />
+            <span>{isTa ? 'குறைந்த இருப்பு' : 'Low stock'}</span>
+          </button>
 
           {/* Category Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-            {['all', 'rice', 'pulses', 'wheat', 'grains', 'oilseeds'].map((cat) => (
+          {[
+            { id: 'all', label: isTa ? 'அனைத்தும்' : 'All' },
+            { id: 'rice', label: isTa ? 'நெல் & அரிசி' : 'Paddy & Rice' },
+            { id: 'pulses', label: isTa ? 'பருப்பு வகைகள்' : 'Pulses & Dal' },
+            { id: 'wheat', label: isTa ? 'கோதுமை' : 'Wheat' },
+            { id: 'grains', label: isTa ? 'சிறுதானியங்கள்' : 'Millets' },
+            { id: 'oilseeds', label: isTa ? 'எண்ணெய் வித்து' : 'Oilseeds' },
+          ].map((cat) => {
+            const isSelected = !onlyLowStock && selectedCategory === cat.id;
+            return (
               <button
-                key={cat}
+                key={cat.id}
                 type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#8C5D17] text-white shadow-xs'
+                onClick={() => {
+                  setOnlyLowStock(false);
+                  setSelectedCategory(cat.id);
+                }}
+                className={`h-8 px-3 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                  isSelected
+                    ? 'bg-[#14532D] text-white shadow-xs'
                     : 'bg-white text-[#5B6660] border border-[#DFE4DC] hover:bg-[#F7F4EC]'
                 }`}
               >
-                {cat === 'all'
-                  ? isTa ? 'அனைத்தும்' : 'All Products'
-                  : cat === 'rice'
-                  ? isTa ? 'நெல் & அரிசி' : 'Rice / Paddy'
-                  : cat === 'pulses'
-                  ? isTa ? 'பருப்பு வகைகள்' : 'Pulses & Dal'
-                  : cat === 'wheat'
-                  ? isTa ? 'கோதுமை' : 'Wheat'
-                  : cat === 'grains'
-                  ? isTa ? 'தானியங்கள் (Millet)' : 'Millets & Grains'
-                  : isTa ? 'எண்ணெய் வித்துக்கள்' : 'Oilseeds'}
+                {cat.label}
               </button>
-            ))}
-          </div>
-        </section>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* =========================================================================
-            SCREEN INV5: MY INVENTORY LIST
-            ========================================================================= */}
-        <section className="space-y-3" aria-label="Products List">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#1C2420]">
-              {isTa ? 'சேமிக்கப்பட்ட தானியப் பட்டியல்' : 'Dry Goods Catalog'}
-              <span className="ml-1.5 text-xs text-[#5B6660] font-normal">({filteredProducts.length})</span>
+      {/* =========================================================================
+          PRODUCT LIST (Identical layout per row, 56px thumbnail, taps open detail)
+          ========================================================================= */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-[#5B6660] uppercase tracking-wider">
+            {isTa ? 'தானியப் பட்டியல்' : 'Harvest stock'} ({filteredProducts.length})
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowArchived(!showArchived)}
+            className={`text-xs font-semibold hover:underline cursor-pointer ${
+              showArchived ? 'text-[#B5472B]' : 'text-[#5B6660]'
+            }`}
+          >
+            {showArchived ? (isTa ? 'செயலில் உள்ளவை' : 'Active items') : (isTa ? 'காப்பகம்' : 'Archived items')}
+          </button>
+        </div>
+
+        {filteredProducts.length === 0 ? (
+          <div className="p-8 text-center bg-white rounded-2xl border border-[#DFE4DC] space-y-3">
+            <Package size={32} className="mx-auto text-[#5B6660]/40" />
+            <h3 className="text-sm font-semibold text-[#1C2420]">
+              {isTa ? 'பொருட்கள் எதுவும் கிடைக்கவில்லை' : 'No items match your criteria'}
             </h3>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowArchived(!showArchived)}
-                className={`text-xs font-semibold hover:underline cursor-pointer ${
-                  showArchived ? 'text-[#B5472B]' : 'text-[#5B6660]'
-                }`}
-              >
-                {showArchived ? (isTa ? 'செயலில் உள்ளவை' : 'Active Items') : (isTa ? 'காப்பகப் பட்டியல்' : 'Archived Items')}
-              </button>
-            </div>
+            <p className="text-xs text-[#5B6660]">
+              {isTa ? 'வடிகட்டிகளை மாற்றவும் அல்லது புதிய பயிர் சேர்க்கவும்.' : 'Clear search or add a new dry agricultural product.'}
+            </p>
           </div>
+        ) : (
+          <div className="space-y-2.5">
+            {filteredProducts.map((p) => {
+              const isSelected = activeProduct?.id === p.id && showDetailSheet;
+              const isLow = p.status === 'low_stock';
 
-          {filteredProducts.length === 0 ? (
-            <div className="card-dashboard p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-amber-100 text-[#8C5D17] mx-auto flex items-center justify-center">
-                <Package size={24} />
-              </div>
-              <h4 className="text-sm font-bold text-[#1C2420]">
-                {isTa ? 'இருப்புப் பொருட்கள் இல்லை' : 'No Dry Products Found'}
-              </h4>
-              <p className="text-xs text-[#5B6660] max-w-xs mx-auto">
-                {isTa
-                  ? 'உங்கள் அறுவடை நெல், தானியம் அல்லது பருப்பு வகைகளை சேர்க்க "பயிர் சேர்க்க" பொத்தானை அழுத்தவும்.'
-                  : 'Start recording your farm harvest stock. No cold storage booking required.'}
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowAddModal(true)}
-                className="py-2 px-4 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] transition-all cursor-pointer"
-              >
-                {isTa ? 'புதிய பயிர் சேர்க்க' : 'Add First Product'}
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredProducts.map((p) => {
-                const isSelected = activeProduct?.id === p.id;
-                const isLow = p.status === 'low_stock';
-                const isDepleted = p.quantity === 0;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => handleOpenDetail(p)}
+                  className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer shadow-[0_2px_8px_rgba(15,61,46,0.04)] ${
+                    isSelected
+                      ? 'border-[#14532D] bg-[#E7F5EE]/40 shadow-sm'
+                      : 'border-[#DFE4DC] hover:border-[#14532D]/40'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* 56px Thumbnail */}
+                    <CropThumbnail
+                      size={56}
+                      category={p.category}
+                      name={p.name}
+                      imageUrl={p.imageUrl}
+                    />
 
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => setActiveProduct(p)}
-                    className={`card-dashboard p-4 transition-all cursor-pointer border-l-4 ${
-                      isSelected
-                        ? 'border-l-[#8C5D17] ring-1 ring-[#8C5D17]/40 shadow-sm'
-                        : isLow
-                        ? 'border-l-[#B5472B]'
-                        : 'border-l-[#14532D]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <img
-                          src={p.imageUrl}
-                          alt={p.name}
-                          className="w-14 h-14 rounded-xl object-cover border border-[#DFE4DC] flex-shrink-0"
-                        />
+                    {/* Content Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="text-sm font-bold text-[#1C2420] truncate">
-                              {isTa ? p.nameTa : p.name}
-                            </h4>
-                            {p.variety && (
-                              <span className="text-[10px] text-[#5B6660] bg-[#F7F4EC] px-1.5 py-0.5 rounded-md">
-                                {p.variety}
-                              </span>
-                            )}
-                          </div>
+                          {/* Name on 1 line with ellipsis */}
+                          <h3 className="text-sm font-bold text-[#1C2420] truncate font-ui">
+                            {isTa ? p.nameTa : p.name}
+                          </h3>
+                          {/* Variety as quiet caption */}
+                          <span className="text-xs text-[#5B6660] block truncate">
+                            {p.variety ? `${p.variety}` : (isTa ? 'விவசாய கிடங்கு பயிர்' : 'Standard grade harvest')}
+                          </span>
+                        </div>
 
-                          <div className="flex items-baseline gap-1 mt-1">
-                            <span className="font-serif-hero text-xl font-bold text-[#1C2420]">
-                              {p.quantity}
-                            </span>
-                            <span className="text-xs font-bold text-[#5B6660]">{p.unit}</span>
-                          </div>
-
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-[#5B6660]">
-                            <span className="flex items-center gap-0.5 truncate">
-                              <MapPin size={11} className="text-[#8C5D17] flex-shrink-0" />
-                              <span className="truncate">{p.storageLocation}</span>
-                            </span>
-                            <span>•</span>
-                            <span className="font-mono text-[10px]">{p.batchLotId}</span>
-                          </div>
+                        {/* Status Tag aligned right */}
+                        <div className="shrink-0">
+                          <Tag variant={statusToTagVariant(p.status)} dot>
+                            {isLow ? (isTa ? 'குறைந்த இருப்பு' : 'Low stock') : (isTa ? 'இருப்பில் உள்ளது' : 'In stock')}
+                          </Tag>
                         </div>
                       </div>
 
-                      {/* Status Badges */}
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        {isLow ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">
-                            <AlertTriangle size={11} />
-                            <span>{isTa ? 'குறைந்தது' : 'Low Stock'}</span>
+                      {/* Quantity & Meta Row */}
+                      <div className="flex items-end justify-between gap-2 mt-2">
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-serif-hero text-xl font-bold text-[#1C2420] tabular-nums">
+                            {p.quantity.toLocaleString('en-IN')}
                           </span>
-                        ) : isDepleted ? (
-                          <span className="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 text-[10px] font-bold">
-                            {isTa ? 'தீர்ந்தது' : 'Depleted'}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#E7F5EE] text-[#14532D] text-[10px] font-bold">
-                            <CheckCircle2 size={11} />
-                            <span>{isTa ? 'இருப்பு உள்ளது' : 'Optimal'}</span>
-                          </span>
-                        )}
+                          <span className="text-xs font-semibold text-[#5B6660]">{p.unit}</span>
+                        </div>
 
-                        <span className="text-[10px] text-[#5B6660]">
-                          {p.transactions.length} {isTa ? 'பரிவர்த்தனைகள்' : 'Movements'}
-                        </span>
+                        {/* Meta row: Location (icon + truncated) & Lot ID (mono 12px) */}
+                        <div className="flex items-center gap-2 text-xs text-[#5B6660] min-w-0">
+                          <span className="flex items-center gap-1 truncate max-w-[120px]">
+                            <MapPin size={12} className="shrink-0 text-[#14532D]" />
+                            <span className="truncate">{p.storageLocation}</span>
+                          </span>
+                          <span className="font-mono text-xs text-[#1C2420] shrink-0 font-medium bg-[#F7F4EC] px-1.5 py-0.5 rounded-md border border-[#DFE4DC]">
+                            {p.batchLotId}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* =========================================================================
-            SCREEN INV6: PRODUCT DETAILS & ACTION CONTROLS
-            ========================================================================= */}
-        {activeProduct && (
-          <section className="card-dashboard p-5 border-t-4 border-t-[#8C5D17] space-y-4 shadow-sm" aria-label="Product Operations Console">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8C5D17] block">
-                  {isTa ? 'தேர்ந்தெடுக்கப்பட்ட பயிர் செயல்பாடுகள்' : 'Selected Product Console'}
-                </span>
-                <h3 className="text-base font-extrabold text-[#1C2420]">
-                  {isTa ? activeProduct.nameTa : activeProduct.name} ({activeProduct.batchLotId})
-                </h3>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setShowThresholdModal(true)}
-                  className="p-2 rounded-xl bg-[#F7F4EC] hover:bg-amber-100 text-[#8C5D17] text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-                  title="Configure Alert Threshold"
-                >
-                  <AlertTriangle size={14} />
-                  <span>{activeProduct.lowStockThreshold} {activeProduct.unit}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowHistoryModal(true)}
-                  className="p-2 rounded-xl bg-[#F7F4EC] hover:bg-[#EEF6ED] text-[#134E35] text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-                  title="View History Ledger"
-                >
-                  <History size={14} />
-                  <span>{isTa ? 'வரலாறு' : 'Ledger'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Balances & Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
-              <div className="p-2.5 rounded-xl bg-[#F7F4EC]">
-                <span className="text-[#5B6660] block">{isTa ? 'நடப்பு இருப்பு' : 'Available Stock'}</span>
-                <span className="text-base font-extrabold text-[#1C2420]">
-                  {activeProduct.quantity} {activeProduct.unit}
-                </span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F4EC]">
-                <span className="text-[#5B6660] block">{isTa ? 'இருப்பிடக் கிடங்கு' : 'Location'}</span>
-                <span className="font-bold text-[#1C2420] truncate block" title={activeProduct.storageLocation}>
-                  {activeProduct.storageLocation}
-                </span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F4EC]">
-                <span className="text-[#5B6660] block">{isTa ? 'மதிப்பீடு' : 'Estimated Value'}</span>
-                <span className="font-bold text-[#14532D]">
-                  ₹{(activeProduct.totalValue || (activeProduct.unitCost || 0) * activeProduct.quantity).toLocaleString('en-IN')}
-                </span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F4EC]">
-                <span className="text-[#5B6660] block">{isTa ? 'அறுவடை தேதி' : 'Harvest Date'}</span>
-                <span className="font-bold text-[#1C2420]">{activeProduct.harvestDate || '2026-08-15'}</span>
-              </div>
-            </div>
-
-            {/* Core Action Buttons: Add, Remove, Adjust, Transfer */}
-            <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setActionQty(5);
-                  setActionReason('Harvest Lot Addition');
-                  setShowAddStockModal(true);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Plus size={14} />
-                <span>{isTa ? 'இருப்பு சேர்' : 'Add Stock'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActionQty(Math.min(5, activeProduct.quantity));
-                  setActionReason('Mandi Wholesale Sale');
-                  setShowRemoveStockModal(true);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-[#C8923A] text-white text-xs font-bold hover:bg-[#A67527] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <TrendingDown size={14} />
-                <span>{isTa ? 'இருப்பு எடு' : 'Remove Stock'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setVerifiedQty(activeProduct.quantity);
-                  setActionReason('Monthly Physical Count Verification');
-                  setShowAdjustModal(true);
-                }}
-                className="py-2.5 px-3 rounded-xl border border-[#DFE4DC] bg-white text-[#1C2420] text-xs font-bold hover:bg-[#F7F4EC] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Edit2 size={14} />
-                <span>{isTa ? 'சரிசெய்' : 'Adjust Stock'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActionQty(Math.min(5, activeProduct.quantity));
-                  setActionReason('Inter-facility godown relocation');
-                  setShowTransferModal(true);
-                }}
-                className="py-2.5 px-3 rounded-xl border border-[#DFE4DC] bg-white text-[#1C2420] text-xs font-bold hover:bg-[#F7F4EC] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <MoveRight size={14} />
-                <span>{isTa ? 'இடம் மாற்று' : 'Transfer'}</span>
-              </button>
-            </div>
-
-            {/* Archive / Restore Button */}
-            <div className="pt-1 flex justify-end">
-              {activeProduct.isArchived ? (
-                <button
-                  type="button"
-                  onClick={() => restoreDryProduct(activeProduct.id)}
-                  className="text-xs font-bold text-[#14532D] flex items-center gap-1 hover:underline cursor-pointer"
-                >
-                  <RefreshCw size={13} />
-                  <span>{isTa ? 'மீண்டும் செயல்படுத்து (Restore)' : 'Restore to Active'}</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleArchive(activeProduct)}
-                  className="text-xs font-semibold text-[#5B6660] hover:text-[#B5472B] flex items-center gap-1 cursor-pointer"
-                >
-                  <Archive size={13} />
-                  <span>{isTa ? 'காப்பகத்தில் சேர் (Archive)' : 'Archive Product'}</span>
-                </button>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* =========================================================================
-            SCREEN INV11: IMMUTABLE AUDIT LEDGER PREVIEW
-            ========================================================================= */}
-        <section className="space-y-3" aria-label="Recent Inventory Transactions">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#5B6660]">
-              {isTa ? 'சமீபத்திய இருப்புப் பதிவேடு' : 'Recent Movement Ledger'}
-            </span>
-            <span className="text-[11px] font-medium text-[#5B6660]">
-              {isTa ? 'மாற்ற முடியாத பதிவுகள்' : 'Append-Only Transactions'}
-            </span>
+                </div>
+              );
+            })}
           </div>
+        )}
+      </div>
 
-          <div className="space-y-2">
-            {allRecentMovements.map((tx) => (
+      {/* =========================================================================
+          IMMUTABLE AUDIT LEDGER PREVIEW
+          ========================================================================= */}
+      <div className="p-4 rounded-2xl bg-white border border-[#DFE4DC] shadow-[0_2px_8px_rgba(15,61,46,0.05)] space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-[#5B6660] uppercase tracking-wider">
+            {isTa ? 'இருப்புப் பதிவேடு' : 'Movement ledger'}
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowHistoryModal(true)}
+            className="text-xs font-semibold text-[#14532D] hover:underline cursor-pointer"
+          >
+            {isTa ? 'முழு பதிவேடு காண்க' : 'See full ledger'}
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {allRecentMovements.map((tx) => {
+            const isAdd = tx.type === 'initial' || tx.type === 'add';
+            const isRemove = tx.type === 'remove';
+            const isTransfer = tx.type === 'transfer';
+
+            const iconBg = isAdd
+              ? 'bg-[#E7F5EE] text-[#14532D]'
+              : isRemove
+              ? 'bg-[#FBEBE7] text-[#B5472B]'
+              : isTransfer
+              ? 'bg-blue-50 text-blue-700'
+              : 'bg-[#FEF3C7] text-[#8C5D17]';
+
+            return (
               <div
                 key={tx.id}
-                className="p-3 rounded-2xl bg-white border border-[#DFE4DC] flex items-center justify-between gap-3 text-xs"
+                className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC]/60 flex items-center justify-between gap-3 text-xs"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      tx.type === 'initial' || tx.type === 'add'
-                        ? 'bg-[#E7F5EE] text-[#14532D]'
-                        : tx.type === 'remove'
-                        ? 'bg-amber-100 text-[#8C5D17]'
-                        : tx.type === 'transfer'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
-                    }`}
-                  >
-                    {tx.type === 'initial' || tx.type === 'add' ? (
-                      <TrendingUp size={14} />
-                    ) : tx.type === 'remove' ? (
-                      <TrendingDown size={14} />
-                    ) : tx.type === 'transfer' ? (
-                      <MoveRight size={14} />
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+                    {isAdd ? (
+                      <TrendingUp size={16} />
+                    ) : isRemove ? (
+                      <TrendingDown size={16} />
+                    ) : isTransfer ? (
+                      <MoveRight size={16} />
                     ) : (
-                      <Edit2 size={14} />
+                      <Edit2 size={16} />
                     )}
                   </div>
                   <div className="min-w-0">
                     <span className="font-bold text-[#1C2420] block truncate">
                       {isTa ? tx.productNameTa : tx.productName} • {tx.reason}
                     </span>
-                    <span className="text-[10px] text-[#5B6660]">
-                      {tx.receiptNumber} • {tx.date} • {tx.authorizedBy}
+                    <span className="text-xs text-[#5B6660]">
+                      {tx.receiptNumber} • {formatDate(tx.date)}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-right flex-shrink-0">
+                <div className="text-right shrink-0">
                   <span
-                    className={`font-bold block ${
-                      tx.type === 'initial' || tx.type === 'add'
-                        ? 'text-[#14532D]'
-                        : tx.type === 'remove'
-                        ? 'text-[#B5472B]'
-                        : 'text-[#1C2420]'
+                    className={`font-bold block tabular-nums ${
+                      isAdd ? 'text-[#14532D]' : isRemove ? 'text-[#B5472B]' : 'text-[#1C2420]'
                     }`}
                   >
-                    {tx.type === 'remove' ? '-' : '+'}
-                    {tx.quantity} {tx.unit}
+                    {isRemove ? '-' : '+'}
+                    {tx.quantity}&nbsp;{tx.unit}
                   </span>
-                  <span className="text-[10px] text-[#5B6660]">
+                  <span className="text-xs text-[#5B6660] tabular-nums">
                     {tx.previousBalance} → {tx.newBalance}
                   </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
+            );
+          })}
+        </div>
       </div>
 
       {/* =========================================================================
-          SCREEN INV2 & INV3: ADD PRODUCT MODAL & VALIDATION
+          DETAIL BOTTOM SHEET (Opened by tapping a product row)
+          ========================================================================= */}
+      {showDetailSheet && activeProduct && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end justify-center p-0 sm:p-4">
+          <div className="w-full max-w-[430px] bg-white rounded-t-3xl sm:rounded-3xl p-5 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            {/* Sheet Handle */}
+            <div className="w-12 h-1.5 rounded-full bg-[#DFE4DC] mx-auto sm:hidden" />
+
+            {/* Header: Name and Lot on separate lines */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold text-[#1C2420] leading-tight font-ui truncate">
+                  {isTa ? activeProduct.nameTa : activeProduct.name}
+                </h2>
+                <span className="font-mono text-xs text-[#5B6660] block mt-0.5">
+                  Lot: {activeProduct.batchLotId}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* Overflow Menu Button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowOverflowMenu(!showOverflowMenu)}
+                    className="w-9 h-9 rounded-xl bg-[#F7F4EC] hover:bg-[#DFE4DC] text-[#1C2420] flex items-center justify-center cursor-pointer"
+                    aria-label="More actions"
+                  >
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {showOverflowMenu && (
+                    <div className="absolute right-0 top-10 w-44 bg-white rounded-xl shadow-lg border border-[#DFE4DC] py-1 z-20">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowOverflowMenu(false);
+                          setShowThresholdModal(true);
+                        }}
+                        className="w-full px-3 py-2 text-left text-xs font-semibold text-[#1C2420] hover:bg-[#F7F4EC] flex items-center gap-2 cursor-pointer"
+                      >
+                        <AlertTriangle size={14} className="text-[#8C5D17]" />
+                        <span>{isTa ? 'எச்சரிக்கை அளவு' : 'Edit alert level'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowOverflowMenu(false);
+                          handleArchive(activeProduct);
+                        }}
+                        className="w-full px-3 py-2 text-left text-xs font-semibold text-[#B5472B] hover:bg-[#FBEBE7] flex items-center gap-2 cursor-pointer border-t border-[#DFE4DC]/50"
+                      >
+                        <Archive size={14} />
+                        <span>{activeProduct.isArchived ? (isTa ? 'மீட்டெடு' : 'Restore product') : (isTa ? 'காப்பகத்தில் சேர்' : 'Archive product')}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDetailSheet(false)}
+                  className="w-9 h-9 rounded-xl bg-[#F7F4EC] hover:bg-[#DFE4DC] text-[#5B6660] flex items-center justify-center cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Warning Explanation if Low Stock */}
+            {activeProduct.status === 'low_stock' && (
+              <div className="p-3 rounded-xl bg-[#FFF2EB] border border-[#FED7AA] flex items-center gap-2 text-xs text-[#C2410C]">
+                <AlertTriangle size={16} className="shrink-0" />
+                <span>
+                  {isTa
+                    ? `மறுவரிசை நிலைக்கு கீழே உள்ளது: ${activeProduct.lowStockThreshold} ${activeProduct.unit}`
+                    : `Below reorder level: ${activeProduct.lowStockThreshold} ${activeProduct.unit}`}
+                </span>
+              </div>
+            )}
+
+            {/* 2x2 Info Grid: Available, Location, Estimated Value, Harvest Date */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC]/60 space-y-0.5">
+                <span className="text-[#5B6660] block font-medium">
+                  {isTa ? 'கிடைக்கக்கூடிய இருப்பு' : 'Available stock'}
+                </span>
+                <span className="font-serif-hero text-lg font-bold text-[#1C2420] tabular-nums block">
+                  {formatQuantity(activeProduct.quantity, activeProduct.unit)}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC]/60 space-y-0.5">
+                <span className="text-[#5B6660] block font-medium">
+                  {isTa ? 'கிடங்கு இருப்பிடம்' : 'Storage location'}
+                </span>
+                <span className="text-xs font-semibold text-[#1C2420] truncate block" title={activeProduct.storageLocation}>
+                  {activeProduct.storageLocation}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC]/60 space-y-0.5">
+                <span className="text-[#5B6660] block font-medium">
+                  {isTa ? 'மதிப்பிடப்பட்ட மதிப்பு' : 'Estimated value'}
+                </span>
+                <span className="font-serif-hero text-lg font-bold text-[#14532D] tabular-nums block">
+                  {formatCurrency(activeProduct.totalValue || (activeProduct.unitCost || 0) * activeProduct.quantity)}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC]/60 space-y-0.5">
+                <span className="text-[#5B6660] block font-medium">
+                  {isTa ? 'அறுவடை தேதி' : 'Harvest date'}
+                </span>
+                <span className="text-xs font-semibold text-[#1C2420] block">
+                  {formatDate(activeProduct.harvestDate)}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions: Add Stock (Primary LG full-width), Remove Stock (Secondary MD), Adjust & Transfer (Tertiary) */}
+            <div className="space-y-2 pt-2">
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                icon={<Plus size={20} />}
+                onClick={() => {
+                  setActionQty(5);
+                  setActionReason('Harvest Lot Addition');
+                  setShowAddStockModal(true);
+                }}
+              >
+                {isTa ? 'இருப்பு சேர்' : 'Add stock'}
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="md"
+                fullWidth
+                icon={<TrendingDown size={20} />}
+                onClick={() => {
+                  setActionQty(Math.min(5, activeProduct.quantity));
+                  setActionReason('Mandi Wholesale Sale');
+                  setShowRemoveStockModal(true);
+                }}
+              >
+                {isTa ? 'இருப்பு எடு' : 'Remove stock'}
+              </Button>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button
+                  variant="tertiary"
+                  size="md"
+                  icon={<Edit2 size={18} />}
+                  onClick={() => {
+                    setVerifiedQty(activeProduct.quantity);
+                    setActionReason('Monthly Physical Count Verification');
+                    setShowAdjustModal(true);
+                  }}
+                >
+                  {isTa ? 'சரிசெய்' : 'Adjust'}
+                </Button>
+
+                <Button
+                  variant="tertiary"
+                  size="md"
+                  icon={<MoveRight size={18} />}
+                  onClick={() => {
+                    setActionQty(Math.min(5, activeProduct.quantity));
+                    setActionReason('Inter-facility godown relocation');
+                    setShowTransferModal(true);
+                  }}
+                >
+                  {isTa ? 'இடம் மாற்று' : 'Transfer'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          ADD PRODUCT MODAL
           ========================================================================= */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="max-w-lg w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C5D17] block">
-                  {isTa ? 'புதிய தானியப் பதிவு' : 'New Harvest Intake'}
-                </span>
-                <h3 className="text-base font-extrabold text-[#1C2420]">
-                  {isTa ? 'உலர்ந்த வேளாண் பொருள் பதிவு' : 'Register Dry Agricultural Product'}
+                <h3 className="text-base font-bold text-[#14532D] font-ui">
+                  {isTa ? 'உலர்ந்த தானியப் பதிவு' : 'Register Dry Crop Harvest'}
                 </h3>
+                <p className="text-xs text-[#5B6660]">
+                  {isTa ? 'விவசாய கிடங்கு பதிவு' : 'Record new crop lot on your farm'}
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Quick Common Presets */}
+            {/* Quick Presets */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-[#5B6660] block">
-                {isTa ? 'விரைவுப் பரிந்துரைகள் (1-கிளிக் தேர்வு):' : 'Select Common Tamil Nadu Dry Crops:'}
+              <span className="text-xs font-semibold text-[#5B6660] block">
+                {isTa ? 'விரைவுப் பரிந்துரைகள்:' : 'Quick Crop Presets:'}
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {PRESET_CROPS.map((c) => (
@@ -810,7 +860,7 @@ export const FarmerDryInventoryPage: React.FC = () => {
                     key={c.name}
                     type="button"
                     onClick={() => handleSelectPreset(c)}
-                    className="px-2.5 py-1 rounded-lg bg-[#F7F4EC] hover:bg-amber-100 border border-[#DFE4DC] text-[11px] font-bold text-[#1C2420] transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-[#F7F4EC] hover:bg-[#E7F5EE] border border-[#DFE4DC] text-xs font-semibold text-[#1C2420] cursor-pointer"
                   >
                     {isTa ? c.nameTa : c.name}
                   </button>
@@ -819,33 +869,23 @@ export const FarmerDryInventoryPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleAddProductSubmit} className="space-y-3.5 pt-1">
-              {/* Product Name */}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'பயிரின் பெயர் *' : 'Product Name *'}
-                </label>
-                <input
-                  type="text"
-                  value={newProdName}
-                  onChange={(e) => setNewProdName(e.target.value)}
-                  placeholder="e.g. Deluxe Ponni Raw Rice"
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden"
-                />
-                {formErrors.name && (
-                  <span className="text-[11px] text-red-600 block">{formErrors.name}</span>
-                )}
-              </div>
+              <Input
+                label={isTa ? 'பயிரின் பெயர் *' : 'Product Name *'}
+                placeholder="e.g. Deluxe Ponni Raw Rice"
+                value={newProdName}
+                onChange={(e) => setNewProdName(e.target.value)}
+                error={formErrors.name}
+              />
 
-              {/* Category & Variety */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'பிரிவு (Category) *' : 'Category *'}
+                <div className="space-y-1.5 text-left">
+                  <label className="block text-sm font-semibold text-[#1C2420]">
+                    {isTa ? 'பிரிவு *' : 'Category *'}
                   </label>
                   <select
                     value={newProdCategory}
                     onChange={(e) => setNewProdCategory(e.target.value as DryCropCategory)}
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden bg-white"
+                    className="w-full h-12 px-3 rounded-xl border border-[#DFE4DC] text-base font-medium bg-white text-[#1C2420] outline-hidden focus:border-[#14532D]"
                   >
                     <option value="rice">Rice / Paddy</option>
                     <option value="pulses">Pulses & Dal</option>
@@ -857,131 +897,87 @@ export const FarmerDryInventoryPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'ரகம் (Variety)' : 'Variety (Optional)'}
-                  </label>
-                  <input
-                    type="text"
-                    value={newProdVariety}
-                    onChange={(e) => setNewProdVariety(e.target.value)}
-                    placeholder="e.g. Grade A / BPT 5204"
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden"
-                  />
-                </div>
+                <Input
+                  label={isTa ? 'ரகம்' : 'Variety'}
+                  placeholder="e.g. Grade A / BPT"
+                  value={newProdVariety}
+                  onChange={(e) => setNewProdVariety(e.target.value)}
+                />
               </div>
 
-              {/* Quantity & Unit */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'தொடக்க இருப்பு அளவு *' : 'Opening Quantity *'}
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newProdQty}
-                    onChange={(e) => setNewProdQty(Number(e.target.value))}
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold focus:border-[#8C5D17] outline-hidden"
-                  />
-                  {formErrors.qty && (
-                    <span className="text-[11px] text-red-600 block">{formErrors.qty}</span>
-                  )}
-                </div>
+                <Input
+                  label={isTa ? 'இருப்பு அளவு *' : 'Opening Quantity *'}
+                  type="number"
+                  min="1"
+                  value={newProdQty}
+                  onChange={(e) => setNewProdQty(Number(e.target.value))}
+                  error={formErrors.qty}
+                />
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'அலகு (Unit) *' : 'Measurement Unit *'}
+                <div className="space-y-1.5 text-left">
+                  <label className="block text-sm font-semibold text-[#1C2420]">
+                    {isTa ? 'அலகு *' : 'Unit *'}
                   </label>
                   <select
                     value={newProdUnit}
                     onChange={(e) => setNewProdUnit(e.target.value as DryCropUnit)}
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold focus:border-[#8C5D17] outline-hidden bg-white"
+                    className="w-full h-12 px-3 rounded-xl border border-[#DFE4DC] text-base font-medium bg-white text-[#1C2420] outline-hidden focus:border-[#14532D]"
                   >
                     <option value="quintal">Quintals (100 kg)</option>
                     <option value="kg">Kilograms (kg)</option>
-                    <option value="bag">Standard Bags (50 kg)</option>
+                    <option value="bag">Gunny Bags (50 kg)</option>
                     <option value="tonne">Metric Tonnes</option>
                   </select>
                 </div>
               </div>
 
-              {/* Storage Location & Low-Stock Threshold */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'சேமிப்பக இடம் *' : 'Storage Location *'}
-                  </label>
-                  <input
-                    type="text"
-                    value={newProdLocation}
-                    onChange={(e) => setNewProdLocation(e.target.value)}
-                    placeholder="e.g. Farm Godown #1"
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden"
-                  />
-                  {formErrors.location && (
-                    <span className="text-[11px] text-red-600 block">{formErrors.location}</span>
-                  )}
-                </div>
+              <Input
+                label={isTa ? 'சேமிப்பக இடம் *' : 'Storage Location *'}
+                placeholder="e.g. Farm Godown #1"
+                value={newProdLocation}
+                onChange={(e) => setNewProdLocation(e.target.value)}
+                error={formErrors.location}
+              />
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'குறைந்த இருப்பு எச்சரிக்கை' : 'Low Stock Alert Level'}
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newProdThreshold}
-                    onChange={(e) => setNewProdThreshold(Number(e.target.value))}
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  label={isTa ? 'எச்சரிக்கை வரம்பு' : 'Alert Level'}
+                  type="number"
+                  min="1"
+                  value={newProdThreshold}
+                  onChange={(e) => setNewProdThreshold(Number(e.target.value))}
+                />
+
+                <Input
+                  label={isTa ? 'அறுவடை தேதி' : 'Harvest Date'}
+                  type="date"
+                  value={newProdHarvestDate}
+                  onChange={(e) => setNewProdHarvestDate(e.target.value)}
+                />
               </div>
 
-              {/* Harvest Date & Unit Cost */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'அறுவடை தேதி' : 'Harvest Date'}
-                  </label>
-                  <input
-                    type="date"
-                    value={newProdHarvestDate}
-                    onChange={(e) => setNewProdHarvestDate(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden"
-                  />
-                </div>
+              <Input
+                label={isTa ? 'மதிப்பு (₹/Unit)' : 'Unit Cost (₹)'}
+                type="number"
+                min="0"
+                value={newProdCost}
+                onChange={(e) => setNewProdCost(Number(e.target.value))}
+              />
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#404941]">
-                    {isTa ? 'செலவு / விலை (₹/Unit)' : 'Unit Cost (₹/Unit)'}
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newProdCost}
-                    onChange={(e) => setNewProdCost(Number(e.target.value))}
-                    placeholder="3200"
-                    className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold focus:border-[#8C5D17] outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center gap-2">
-                <button
+              <div className="pt-2 flex gap-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
                   onClick={() => setShowAddModal(false)}
-                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
                 >
                   {isTa ? 'ரத்து' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>{isTa ? 'பொருளைப் பதிவு செய்' : 'Validate & Save Product'}</span>
-                  <ArrowRight size={16} />
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  {isTa ? 'சேமி' : 'Save product'}
+                </Button>
               </div>
             </form>
           </div>
@@ -989,64 +985,44 @@ export const FarmerDryInventoryPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          SAVE CONFIRMATION MODAL
+          CONFIRMATION MODAL AFTER REGISTRATION
           ========================================================================= */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 text-center">
-            <div className="w-14 h-14 rounded-full bg-[#E7F5EE] text-[#14532D] mx-auto flex items-center justify-center shadow-xs">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 text-center">
+            <div className="w-14 h-14 rounded-full bg-[#E7F5EE] text-[#14532D] mx-auto flex items-center justify-center">
               <CheckCircle2 size={32} />
             </div>
 
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#14532D]">
-                {isTa ? 'பயிர் பதிவு உறுதி செய்யப்பட்டது' : 'Product Registered Successfully'}
-              </span>
-              <h3 className="text-lg font-bold text-[#1C2420]">
+            <div>
+              <Tag variant="success">{isTa ? 'பதிவு முடிந்தது' : 'Product Registered'}</Tag>
+              <h3 className="text-base font-bold text-[#1C2420] mt-2 font-ui">
                 {isTa ? showConfirmModal.nameTa : showConfirmModal.name}
               </h3>
-              <p className="text-xs text-[#5B6660]">
-                {isTa
-                  ? 'பயிர் பதிவு எண்: '
-                  : 'Record ID: '}
-                <strong className="font-mono text-[#1C2420]">{showConfirmModal.productCode}</strong>
+              <p className="text-xs text-[#5B6660] font-mono mt-0.5">
+                {showConfirmModal.batchLotId}
               </p>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#F7F4EC] text-left text-xs space-y-1.5">
+            <div className="p-3 rounded-xl bg-[#F7F4EC] text-xs text-left space-y-1">
               <div className="flex justify-between">
-                <span className="text-[#5B6660]">{isTa ? 'தொடக்க இருப்பு:' : 'Opening Stock:'}</span>
-                <strong className="text-[#1C2420]">{showConfirmModal.quantity} {showConfirmModal.unit}</strong>
+                <span className="text-[#5B6660]">{isTa ? 'தொடக்க இருப்பு:' : 'Opening balance:'}</span>
+                <span className="font-bold text-[#1C2420] tabular-nums">{showConfirmModal.quantity} {showConfirmModal.unit}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#5B6660]">{isTa ? 'சேமிப்பகம்:' : 'Storage Location:'}</span>
-                <span className="font-medium text-[#1C2420]">{showConfirmModal.storageLocation}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#5B6660]">{isTa ? 'தொகுதி எண்:' : 'Batch Lot:'}</span>
-                <span className="font-mono text-[#1C2420]">{showConfirmModal.batchLotId}</span>
+                <span className="text-[#5B6660]">{isTa ? 'இடம்:' : 'Location:'}</span>
+                <span className="font-medium text-[#1C2420] truncate">{showConfirmModal.storageLocation}</span>
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setShowConfirmModal(null)}
-                className="w-full h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] cursor-pointer flex items-center justify-center shadow-xs"
-              >
-                {isTa ? 'இருப்புப் பட்டியலுக்குச் செல்' : 'Go to Inventory'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowConfirmModal(null);
-                  setShowAddModal(true);
-                }}
-                className="w-full h-10 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-xs font-semibold text-[#5B6660] hover:bg-white cursor-pointer flex items-center justify-center"
-              >
-                {isTa ? 'மற்றொரு பயிர் சேர்க்க' : 'Add Another Product'}
-              </button>
-            </div>
+            <Button
+              variant="primary"
+              size="md"
+              fullWidth
+              onClick={() => setShowConfirmModal(null)}
+            >
+              {isTa ? 'முடிந்தது' : 'Done'}
+            </Button>
           </div>
         </div>
       )}
@@ -1055,85 +1031,69 @@ export const FarmerDryInventoryPage: React.FC = () => {
           ADD STOCK MODAL
           ========================================================================= */}
       {showAddStockModal && activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#14532D]">
-                {isTa ? 'இருப்பு சேர்த்தல்' : 'Add Harvest Stock'}
+              <h3 className="text-base font-bold text-[#14532D] font-ui">
+                {isTa ? 'இருப்பு சேர்த்தல்' : 'Add Stock'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowAddStockModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#E7F5EE] text-xs">
-              <span className="text-[#5B6660] block">{isTa ? 'தற்போதைய இருப்பு:' : 'Current Balance:'}</span>
-              <strong className="text-base text-[#14532D]">{activeProduct.quantity} {activeProduct.unit}</strong>
+            <div className="p-3 rounded-xl bg-[#E7F5EE] text-xs flex justify-between items-center">
+              <span className="text-[#5B6660]">{isTa ? 'நடப்பு இருப்பு:' : 'Current balance:'}</span>
+              <span className="text-sm font-bold text-[#14532D] tabular-nums">
+                {activeProduct.quantity} {activeProduct.unit}
+              </span>
             </div>
 
             <form onSubmit={handleAddStockSubmit} className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'சேர்க்க வேண்டிய அளவு *' : 'Quantity to Add *'}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={actionQty}
-                  onChange={(e) => setActionQty(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold"
-                />
-              </div>
+              <Input
+                label={isTa ? 'சேர்க்க வேண்டிய அளவு *' : 'Quantity to Add *'}
+                type="number"
+                min="1"
+                value={actionQty}
+                onChange={(e) => setActionQty(Number(e.target.value))}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'காரணம் / ஆதாரம் *' : 'Reason / Source *'}
-                </label>
-                <input
-                  type="text"
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  placeholder="e.g. New harvest lot intake"
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold"
-                />
-              </div>
+              <Input
+                label={isTa ? 'ஆதாரம் / காரணம் *' : 'Source / Reason *'}
+                placeholder="e.g. Harvest lot intake"
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'குறிப்புகள் / குறிப்புரை' : 'Notes / Remarks (Optional)'}
-                </label>
-                <input
-                  type="text"
-                  value={actionNotes}
-                  onChange={(e) => setActionNotes(e.target.value)}
-                  placeholder="e.g. Verified bag count"
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold"
-                />
-              </div>
+              <Input
+                label={isTa ? 'குறிப்புகள் (விருப்பப்படி)' : 'Notes (optional)'}
+                placeholder="e.g. Verified by farm manager"
+                value={actionNotes}
+                onChange={(e) => setActionNotes(e.target.value)}
+              />
 
               <div className="p-2.5 rounded-xl bg-[#F7F4EC] text-xs flex justify-between font-bold">
-                <span className="text-[#5B6660]">{isTa ? 'புதிய எதிர்பார்க்கப்படும் இருப்பு:' : 'Expected New Balance:'}</span>
-                <span className="text-[#14532D]">{activeProduct.quantity + actionQty} {activeProduct.unit}</span>
+                <span className="text-[#5B6660]">{isTa ? 'புதிய இருப்பு:' : 'Expected new balance:'}</span>
+                <span className="text-[#14532D] tabular-nums">{activeProduct.quantity + actionQty} {activeProduct.unit}</span>
               </div>
 
-              <div className="pt-2 flex items-center gap-2">
-                <button
+              <div className="pt-2 flex gap-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
                   onClick={() => setShowAddStockModal(false)}
-                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
                 >
                   {isTa ? 'ரத்து' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 h-12 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isTa ? 'சேர்த்தலை உறுதிசெய்' : 'Confirm Stock Addition'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  {isTa ? 'உறுதிசெய்' : 'Confirm addition'}
+                </Button>
               </div>
             </form>
           </div>
@@ -1141,52 +1101,49 @@ export const FarmerDryInventoryPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          REMOVE STOCK MODAL (Non-negative enforcement)
+          REMOVE STOCK MODAL
           ========================================================================= */}
       {showRemoveStockModal && activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#8C5D17]">
-                {isTa ? 'இருப்பு கழித்தல் / விநியோகம்' : 'Remove Stock / Dispatch'}
+              <h3 className="text-base font-bold text-[#1C2420] font-ui">
+                {isTa ? 'இருப்பு கழித்தல்' : 'Remove Stock'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowRemoveStockModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="p-3 rounded-2xl bg-amber-50 text-xs">
-              <span className="text-[#5B6660] block">{isTa ? 'கிடைக்கக்கூடிய இருப்பு:' : 'Available Stock:'}</span>
-              <strong className="text-base text-[#8C5D17]">{activeProduct.quantity} {activeProduct.unit}</strong>
+            <div className="p-3 rounded-xl bg-[#F7F4EC] text-xs flex justify-between items-center">
+              <span className="text-[#5B6660]">{isTa ? 'கிடைக்கும் இருப்பு:' : 'Available:'}</span>
+              <span className="text-sm font-bold text-[#1C2420] tabular-nums">
+                {activeProduct.quantity} {activeProduct.unit}
+              </span>
             </div>
 
             <form onSubmit={handleRemoveStockSubmit} className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'கழிக்க வேண்டிய அளவு *' : 'Quantity to Remove *'}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max={activeProduct.quantity}
-                  value={actionQty}
-                  onChange={(e) => setActionQty(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold"
-                />
-              </div>
+              <Input
+                label={isTa ? 'கழிக்க வேண்டிய அளவு *' : 'Quantity to Remove *'}
+                type="number"
+                min="1"
+                max={activeProduct.quantity}
+                value={actionQty}
+                onChange={(e) => setActionQty(Number(e.target.value))}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
+              <div className="space-y-1.5 text-left">
+                <label className="block text-sm font-semibold text-[#1C2420]">
                   {isTa ? 'காரணம் *' : 'Reason *'}
                 </label>
                 <select
                   value={actionReason}
                   onChange={(e) => setActionReason(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold bg-white"
+                  className="w-full h-12 px-3 rounded-xl border border-[#DFE4DC] text-base font-medium bg-white text-[#1C2420] outline-hidden focus:border-[#14532D]"
                 >
                   <option value="Mandi Wholesale Sale">Mandi Wholesale Sale</option>
                   <option value="Direct Farm Retail Dispatch">Direct Farm Retail Dispatch</option>
@@ -1196,27 +1153,33 @@ export const FarmerDryInventoryPage: React.FC = () => {
                 </select>
               </div>
 
+              <Input
+                label={isTa ? 'குறிப்புகள் (விருப்பப்படி)' : 'Notes (optional)'}
+                placeholder="e.g. Dispatched to trader"
+                value={actionNotes}
+                onChange={(e) => setActionNotes(e.target.value)}
+              />
+
               <div className="p-2.5 rounded-xl bg-[#F7F4EC] text-xs flex justify-between font-bold">
-                <span className="text-[#5B6660]">{isTa ? 'எஞ்சிய இருப்பு:' : 'Remaining Balance:'}</span>
-                <span className={activeProduct.quantity - actionQty <= activeProduct.lowStockThreshold ? 'text-red-700' : 'text-[#1C2420]'}>
+                <span className="text-[#5B6660]">{isTa ? 'எஞ்சிய இருப்பு:' : 'Remaining balance:'}</span>
+                <span className={`tabular-nums ${activeProduct.quantity - actionQty <= activeProduct.lowStockThreshold ? 'text-[#C2410C]' : 'text-[#1C2420]'}`}>
                   {activeProduct.quantity - actionQty} {activeProduct.unit}
                 </span>
               </div>
 
-              <div className="pt-2 flex items-center gap-2">
-                <button
+              <div className="pt-2 flex gap-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
                   onClick={() => setShowRemoveStockModal(false)}
-                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
                 >
                   {isTa ? 'ரத்து' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isTa ? 'கழித்தலை உறுதிசெய்' : 'Confirm Stock Removal'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  {isTa ? 'உறுதிசெய்' : 'Confirm removal'}
+                </Button>
               </div>
             </form>
           </div>
@@ -1224,76 +1187,57 @@ export const FarmerDryInventoryPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          ADJUST STOCK MODAL (Physical Audit Verification)
+          ADJUST STOCK MODAL
           ========================================================================= */}
       {showAdjustModal && activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#1C2420]">
-                {isTa ? 'நேரடி இருப்பு தணிக்கை' : 'Physical Stock Audit Adjustment'}
+              <h3 className="text-base font-bold text-[#1C2420] font-ui">
+                {isTa ? 'இருப்பு சரிபார்த்தல்' : 'Adjust Stock'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowAdjustModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             <p className="text-xs text-[#5B6660]">
-              {isTa
-                ? 'நேரடி எண்ணிக்கைக்குப் பின் இருப்பை சரிசெய்யவும். இந்த மாற்றம் பதிவேட்டில் தணிக்கை செய்யப்படும்.'
-                : 'Use this only after a verified physical audit. The correction will be logged as an immutable audit event.'}
+              {isTa ? 'நேரடி எண்ணிக்கைக்குப் பின் சரிபார்க்கப்பட்ட இருப்பை உள்ளிடவும்.' : 'Enter verified count following physical audit.'}
             </p>
 
             <form onSubmit={handleAdjustSubmit} className="space-y-3">
-              <div className="p-2.5 rounded-xl bg-[#F7F4EC] text-xs flex justify-between">
-                <span className="text-[#5B6660]">{isTa ? 'பதிவில் உள்ள இருப்பு:' : 'Recorded Balance:'}</span>
-                <strong className="text-[#1C2420]">{activeProduct.quantity} {activeProduct.unit}</strong>
-              </div>
+              <Input
+                label={isTa ? 'சரிபார்க்கப்பட்ட நேரடி இருப்பு *' : 'Verified Physical Count *'}
+                type="number"
+                min="0"
+                value={verifiedQty}
+                onChange={(e) => setVerifiedQty(Number(e.target.value))}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'சரிபார்க்கப்பட்ட நேரடி இருப்பு *' : 'Verified Physical Balance *'}
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={verifiedQty}
-                  onChange={(e) => setVerifiedQty(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold"
-                />
-              </div>
+              <Input
+                label={isTa ? 'சரிசெய்தலுக்கான காரணம் *' : 'Adjustment Reason *'}
+                placeholder="e.g. Weighbridge calibration difference"
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'சரிசெய்தலுக்கான காரணம் *' : 'Adjustment Reason *'}
-                </label>
-                <input
-                  type="text"
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  placeholder="e.g. Weighbridge calibration difference"
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center gap-2">
-                <button
+              <div className="pt-2 flex gap-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
                   onClick={() => setShowAdjustModal(false)}
-                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
                 >
                   {isTa ? 'ரத்து' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 h-12 rounded-xl bg-[#1C2420] text-white text-xs font-bold hover:bg-black shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isTa ? 'தணிக்கை உறுதிசெய்' : 'Record Audit Adjustment'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  {isTa ? 'பதிவு செய்' : 'Record adjustment'}
+                </Button>
               </div>
             </form>
           </div>
@@ -1304,74 +1248,58 @@ export const FarmerDryInventoryPage: React.FC = () => {
           TRANSFER LOCATION MODAL
           ========================================================================= */}
       {showTransferModal && activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#1C2420]">
-                {isTa ? 'கிடங்கு இடமாற்றம்' : 'Transfer Between Locations'}
+              <h3 className="text-base font-bold text-[#1C2420] font-ui">
+                {isTa ? 'இடமாற்றம்' : 'Transfer Location'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowTransferModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
+            <div className="p-3 rounded-xl bg-[#F7F4EC] text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-[#5B6660]">{isTa ? 'தற்போதைய இடம்:' : 'Source:'}</span>
+                <span className="font-semibold text-[#1C2420] truncate">{activeProduct.storageLocation}</span>
+              </div>
+            </div>
+
             <form onSubmit={handleTransferSubmit} className="space-y-3">
-              <div className="p-2.5 rounded-xl bg-[#F7F4EC] text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-[#5B6660]">{isTa ? 'தற்போதைய இடம்:' : 'Source Location:'}</span>
-                  <strong className="text-[#1C2420]">{activeProduct.storageLocation}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#5B6660]">{isTa ? 'கிடைக்கும் இருப்பு:' : 'Available:'}</span>
-                  <strong className="text-[#1C2420]">{activeProduct.quantity} {activeProduct.unit}</strong>
-                </div>
-              </div>
+              <Input
+                label={isTa ? 'இடமாற்ற அளவு *' : 'Transfer Quantity *'}
+                type="number"
+                min="1"
+                max={activeProduct.quantity}
+                value={actionQty}
+                onChange={(e) => setActionQty(Number(e.target.value))}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'இடமாற்ற அளவு *' : 'Transfer Quantity *'}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max={activeProduct.quantity}
-                  value={actionQty}
-                  onChange={(e) => setActionQty(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold"
-                />
-              </div>
+              <Input
+                label={isTa ? 'புதிய சேருமிடம் *' : 'Destination Storage *'}
+                placeholder="e.g. Palani Central Silo #3"
+                value={transferDest}
+                onChange={(e) => setTransferDest(e.target.value)}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? 'புதிய சேருமிடம் *' : 'Destination Storage Location *'}
-                </label>
-                <input
-                  type="text"
-                  value={transferDest}
-                  onChange={(e) => setTransferDest(e.target.value)}
-                  placeholder="e.g. Palani Central Silo #3"
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-semibold"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center gap-2">
-                <button
+              <div className="pt-2 flex gap-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
                   onClick={() => setShowTransferModal(false)}
-                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
                 >
                   {isTa ? 'ரத்து' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isTa ? 'இடமாற்றத்தை உறுதிசெய்' : 'Confirm Location Transfer'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  {isTa ? 'இடமாற்று' : 'Confirm transfer'}
+                </Button>
               </div>
             </form>
           </div>
@@ -1379,58 +1307,47 @@ export const FarmerDryInventoryPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          CONFIGURE LOW-STOCK THRESHOLD MODAL
+          THRESHOLD MODAL
           ========================================================================= */}
       {showThresholdModal && activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#1C2420]">
-                {isTa ? 'குறைந்த இருப்பு எச்சரிக்கை வரம்பு' : 'Configure Low-Stock Alert'}
+              <h3 className="text-base font-bold text-[#1C2420] font-ui">
+                {isTa ? 'எச்சரிக்கை வரம்பு' : 'Low-Stock Alert Level'}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowThresholdModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <p className="text-xs text-[#5B6660] leading-relaxed">
-              {isTa
-                ? `${activeProduct.nameTa} இருப்பு இந்த அளவுக்கு குறையும்போது அறிவிப்பு அனுப்பப்படும்.`
-                : `Set minimum balance for ${activeProduct.name}. An alert triggers when stock crosses below this threshold.`}
-            </p>
-
             <form onSubmit={handleThresholdSubmit} className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#404941]">
-                  {isTa ? `எச்சரிக்கை அளவு (${activeProduct.unit})` : `Threshold in ${activeProduct.unit}`}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={newThresholdValue}
-                  onChange={(e) => setNewThresholdValue(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-[#C0C9BF] text-xs font-bold"
-                />
-              </div>
+              <Input
+                label={`${isTa ? 'எச்சரிக்கை அளவு' : 'Threshold'} (${activeProduct.unit})`}
+                type="number"
+                min="1"
+                value={newThresholdValue}
+                onChange={(e) => setNewThresholdValue(Number(e.target.value))}
+                helperText={isTa ? 'இருப்பு இந்த அளவுக்குக் குறையும்போது எச்சரிக்கை வரும்' : 'Alert triggers when stock falls below this quantity'}
+              />
 
-              <div className="pt-2 flex items-center gap-2">
-                <button
+              <div className="pt-2 flex gap-2">
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
                   onClick={() => setShowThresholdModal(false)}
-                  className="w-1/3 h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-semibold text-[#5B6660] hover:bg-[#F7F4EC] cursor-pointer"
                 >
                   {isTa ? 'ரத்து' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 h-12 rounded-xl bg-[#8C5D17] text-white text-xs font-bold hover:bg-[#704910] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isTa ? 'வரம்பை சேமி' : 'Save Alert Threshold'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  {isTa ? 'சேமி' : 'Save'}
+                </Button>
               </div>
             </form>
           </div>
@@ -1438,71 +1355,59 @@ export const FarmerDryInventoryPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          PRODUCT TRANSACTION HISTORY MODAL
+          FULL HISTORY LEDGER MODAL
           ========================================================================= */}
-      {showHistoryModal && activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-2 border-b border-[#DFE4DC]">
+      {showHistoryModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-[#DFE4DC] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-[#1C2420]">
-                  {isTa ? 'முழு பரிவர்த்தனை பதிவேடு' : 'Stock Movement Ledger'}
+                <h3 className="text-base font-bold text-[#1C2420] font-ui">
+                  {isTa ? 'முழு இருப்புப் பதிவேடு' : 'Stock Movement Ledger'}
                 </h3>
-                <span className="text-xs text-[#5B6660]">{activeProduct.name} ({activeProduct.batchLotId})</span>
+                <p className="text-xs text-[#5B6660]">
+                  {isTa ? 'அனைத்து பரிவர்த்தனை பதிவுகள்' : 'Append-only audit trail'}
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(false)}
-                className="w-10 h-10 rounded-full bg-[#F4FBF3] flex items-center justify-center text-[#5B6660] hover:bg-[#E7F5EE] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F4EC] flex items-center justify-center text-[#5B6660] cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1">
-              {activeProduct.transactions.map((tx) => (
-                <div
-                  key={tx.id}
-                  className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <span className="font-bold text-[#1C2420] block">{tx.reason}</span>
-                    <span className="text-[10px] text-[#5B6660] block">
-                      {tx.receiptNumber} • {tx.date} • {tx.authorizedBy}
+            <div className="space-y-2">
+              {allRecentMovements.map((tx) => (
+                <div key={tx.id} className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC]/60 text-xs space-y-1">
+                  <div className="flex justify-between items-start">
+                    <span className="font-bold text-[#1C2420]">
+                      {isTa ? tx.productNameTa : tx.productName}
                     </span>
-                    {tx.sourceLocation && tx.destinationLocation && (
-                      <span className="text-[10px] text-blue-700 block font-medium">
-                        {tx.sourceLocation} → {tx.destinationLocation}
-                      </span>
-                    )}
+                    <span className="font-bold text-[#14532D] tabular-nums">
+                      {tx.type === 'remove' ? '-' : '+'}{tx.quantity} {tx.unit}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <span
-                      className={`font-bold block ${
-                        tx.type === 'remove' ? 'text-[#B5472B]' : 'text-[#14532D]'
-                      }`}
-                    >
-                      {tx.type === 'remove' ? '-' : '+'}
-                      {tx.quantity} {tx.unit}
-                    </span>
-                    <span className="text-[10px] text-[#5B6660]">
-                      {tx.previousBalance} → {tx.newBalance}
-                    </span>
+                  <div className="flex justify-between text-xs text-[#5B6660]">
+                    <span>{tx.reason}</span>
+                    <span className="tabular-nums">{tx.previousBalance} → {tx.newBalance}</span>
+                  </div>
+                  <div className="text-xs text-[#5B6660] font-mono">
+                    {tx.receiptNumber} • {formatDate(tx.date)}
                   </div>
                 </div>
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                showToast(isTa ? 'CSV பதிவேடு பதிவிறக்கப்பட்டது!' : 'Transaction ledger exported to CSV format.', 'success');
-              }}
-              className="w-full h-12 rounded-xl border border-[#DFE4DC] bg-white text-xs font-bold text-[#1C2420] hover:bg-[#F7F4EC] flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+            <Button
+              variant="secondary"
+              size="md"
+              fullWidth
+              onClick={() => setShowHistoryModal(false)}
             >
-              <FileSpreadsheet size={16} />
-              <span>{isTa ? 'CSV கோப்பாக பதிவிறக்கு' : 'Export Movement Ledger (CSV)'}</span>
-            </button>
+              {isTa ? 'மூடுக' : 'Close'}
+            </Button>
           </div>
         </div>
       )}

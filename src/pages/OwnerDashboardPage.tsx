@@ -35,7 +35,7 @@ export const OwnerDashboardPage: React.FC = () => {
   const activeBookingsCount = bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_storage').length;
 
   return (
-    <div className="flex flex-col relative w-full pt-4 pb-28 bg-[#F4FBF3] min-h-screen text-[#1C2420]">
+    <div className="flex flex-col relative w-full pt-3 pb-28 text-[#1C2420]">
       <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 space-y-5">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

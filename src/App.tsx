@@ -61,8 +61,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pageRendersOwnHeader = location.pathname === '/capacity-conflict';
 
   return (
-    <div className="min-h-screen bg-[#EDE8DE] sm:py-4 flex justify-center items-start antialiased selection:bg-[#C8923A]/30">
-      <div className="mobile-viewport relative flex flex-col min-h-screen bg-[#F7F4EC] shadow-[0_16px_48px_rgba(15,61,46,0.16)] sm:rounded-[36px] overflow-hidden w-full max-w-5xl">
+    <div className="min-h-screen bg-[#EDE8DE] sm:py-4 flex justify-center items-start antialiased selection:bg-[#14532D]/20">
+      <div className="mobile-viewport relative flex flex-col min-h-screen bg-[#F7F4EC] shadow-[0_16px_48px_rgba(15,61,46,0.16)] sm:rounded-[36px] overflow-hidden w-full max-w-[430px]">
         <ToastContainer />
         {!hideChrome && !pageRendersOwnHeader && <Header />}
         <main className="flex-1 w-full">{children}</main>

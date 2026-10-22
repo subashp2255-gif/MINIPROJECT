@@ -12,7 +12,7 @@ export const FacilityDetailPage: React.FC = () => {
   const facilityReviews = reviews.filter((r) => r.facilityId === facility.id);
 
   return (
-    <div className="flex flex-col relative w-full pt-6 pb-32 bg-[#F4FBF3] min-h-screen text-[#1C2420]">
+    <div className="flex flex-col relative w-full pt-3 pb-28 text-[#1C2420]">
       <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 space-y-4">
         {/* Back Link & Header */}
         <div className="flex items-center gap-2.5">

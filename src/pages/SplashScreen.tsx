@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Snowflake, RefreshCw, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { AppLogo } from '../components/AppLogo';
 
 export const SplashScreen: React.FC = () => {
   const { role, language } = useApp();
@@ -59,8 +60,8 @@ export const SplashScreen: React.FC = () => {
       {/* Center Branding */}
       <div className="flex flex-col items-center text-center space-y-6 max-w-sm">
         <div className="relative">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white shadow-2xl p-3 flex items-center justify-center transform transition-transform hover:scale-105">
-            <img src="/agrisync-icon.png" alt="AgriSync Logo" className="w-full h-full object-contain" />
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white shadow-2xl p-2 flex items-center justify-center transform transition-transform hover:scale-105">
+            <AppLogo size={68} showText={false} className="justify-center" />
           </div>
           <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-xl bg-[#C8923A] text-white flex items-center justify-center shadow-lg border-2 border-[#0F3D2E]">
             <Snowflake size={18} />
@@ -77,8 +78,8 @@ export const SplashScreen: React.FC = () => {
           </p>
           <p className="text-xs text-white/60 max-w-xs mx-auto">
             {isTa
-              ? 'சூரிய மின் குளிர்பதன முன்பதிவு & தனித்துவ தானிய இருப்பு மேலாண்மை அமைப்பு'
-              : 'Decoupled Rural Cold Storage & Enhanced Dry Goods Inventory'}
+              ? 'சூரிய மின் குளிர்பதன முன்பதிவு & தானிய இருப்பு மேலாண்மை அமைப்பு'
+              : 'Rural Cold Storage & Dry Harvest Inventory'}
           </p>
         </div>
 
