@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import {
   Wheat,
@@ -20,9 +21,23 @@ import { Avatar } from '../components/ui/Avatar';
 import { Tag } from '../components/ui/Tag';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { getActiveSupabaseConfig } from '../lib/supabaseClient';
 
 export const ProfileSettingsPage: React.FC = () => {
-  const { user, role, setRole, language, setLanguage, isDemoMode, setIsDemoMode, showToast } = useApp();
+  const navigate = useNavigate();
+  const {
+    user,
+    role,
+    setRole,
+    language,
+    setLanguage,
+    showToast,
+    isSupabaseReady,
+    isLoadingDb,
+    refreshFromDatabase,
+    saveSupabaseCredentials,
+    logout,
+  } = useApp();
   const isTa = language === 'ta';
 
   // Units preference state
@@ -46,16 +61,35 @@ export const ProfileSettingsPage: React.FC = () => {
   // Developer & Demo Tools section state (collapsed by default)
   const [devToolsOpen, setDevToolsOpen] = useState(false);
 
-  // Backend configuration state
-  const [supabaseUrl, setSupabaseUrl] = useState('');
-  const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
+  // Backend configuration state (initialized from env or stored config)
+  const initialConfig = getActiveSupabaseConfig();
+  const [supabaseUrl, setSupabaseUrl] = useState(initialConfig.url || '');
+  const [supabaseAnonKey, setSupabaseAnonKey] = useState(initialConfig.anonKey || '');
   const [aiApiUrl, setAiApiUrl] = useState('http://localhost:8000');
   const [hasFormChanged, setHasFormChanged] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
 
-  const handleSaveBackendConfig = (e: React.FormEvent) => {
+  const handleSaveBackendConfig = async (e: React.FormEvent) => {
     e.preventDefault();
-    showToast(isTa ? 'அமைப்புகள் சேமிக்கப்பட்டன' : 'Backend configuration saved successfully.', 'success');
-    setHasFormChanged(false);
+    setTestingConnection(true);
+    try {
+      const ok = await saveSupabaseCredentials(supabaseUrl, supabaseAnonKey);
+      if (ok) {
+        setHasFormChanged(false);
+      }
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const handleSyncNow = async () => {
+    setTestingConnection(true);
+    try {
+      await refreshFromDatabase();
+      showToast(isTa ? 'சுபாபேஸ் தரவுத்தளம் வெற்றிகரமாக ஒத்திசைக்கப்பட்டது!' : 'Supabase database synced successfully!', 'success');
+    } finally {
+      setTestingConnection(false);
+    }
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -339,18 +373,36 @@ export const ProfileSettingsPage: React.FC = () => {
                   {isTa ? 'தரவு பயன்முறை' : 'Backend Data Mode'}
                 </span>
                 <span className="text-xs text-[#5B6660]">
-                  {isDemoMode ? (isTa ? 'உள்ளமைக்கப்பட்ட டெமோ தரவு' : 'Demo mock data') : (isTa ? 'சுபாபேஸ் நேரலை' : 'Supabase live')}
+                  {isSupabaseReady ? (isTa ? 'சுபாபேஸ் நேரலை இணைக்கப்பட்டுள்ளது' : 'Connected to Supabase PostgreSQL') : (isTa ? 'உள்ளமைக்கப்பட்ட டெமோ முறை' : 'Local Demo Mode (Mock Persistence)')}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsDemoMode(!isDemoMode)}
-                className="cursor-pointer"
-              >
-                <Tag variant={isDemoMode ? 'warning' : 'success'}>
-                  {isDemoMode ? 'Demo' : 'Connected'}
-                </Tag>
-              </button>
+              <Tag variant={isSupabaseReady ? 'success' : 'warning'}>
+                {isSupabaseReady ? 'Supabase Live' : 'Demo Local'}
+              </Tag>
+            </div>
+
+            {/* Supabase Status Alert */}
+            <div className={`p-3 rounded-xl text-xs flex items-center justify-between border ${
+              isSupabaseReady ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'
+            }`}>
+              <div>
+                <p className="font-bold">{isSupabaseReady ? 'Database Connected' : 'Supabase Not Configured'}</p>
+                <p className="text-[11px] opacity-80">
+                  {isSupabaseReady
+                    ? 'RLS, atomic RPCs, and PostgreSQL tables active.'
+                    : 'Add credentials below or set VITE_SUPABASE_URL in .env.'}
+                </p>
+              </div>
+              {isSupabaseReady && (
+                <button
+                  type="button"
+                  onClick={handleSyncNow}
+                  disabled={testingConnection || isLoadingDb}
+                  className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer disabled:opacity-50"
+                >
+                  {testingConnection || isLoadingDb ? 'Syncing...' : 'Sync Now'}
+                </button>
+              )}
             </div>
 
             {/* Backend Fields with Human Labels & White Input Spec */}
@@ -363,7 +415,7 @@ export const ProfileSettingsPage: React.FC = () => {
                   setSupabaseUrl(e.target.value);
                   setHasFormChanged(true);
                 }}
-                helperText="Project endpoint from Supabase dashboard"
+                helperText="Project endpoint from Supabase dashboard (Project Settings -> API)"
               />
 
               <Input
@@ -394,14 +446,30 @@ export const ProfileSettingsPage: React.FC = () => {
                 variant="primary"
                 size="md"
                 fullWidth
-                disabled={!hasFormChanged}
+                disabled={!hasFormChanged || testingConnection}
                 icon={<Save size={16} />}
               >
-                {isTa ? 'அமைப்புகளைச் சேமி' : 'Save'}
+                {testingConnection ? 'Saving & Testing...' : (isTa ? 'அமைப்புகளைச் சேமித்து இணைக்க' : 'Save & Connect to Supabase')}
               </Button>
             </form>
           </div>
         )}
+      </div>
+
+      {/* SIGN OUT ACTION */}
+      <div className="pt-2">
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          icon={<LogOut size={16} />}
+          onClick={async () => {
+            await logout();
+            navigate('/login');
+          }}
+        >
+          {isTa ? 'கணக்கிலிருந்து வெளியேறு' : 'Sign Out'}
+        </Button>
       </div>
 
       {/* EDIT PROFILE MODAL */}

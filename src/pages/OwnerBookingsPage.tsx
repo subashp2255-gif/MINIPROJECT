@@ -18,6 +18,7 @@ export const OwnerBookingsPage: React.FC = () => {
     approvePickupRequest,
     rejectPickupRequest,
     completePickupWithdrawal,
+    updateBookingStatus,
     language,
     showToast,
   } = useApp();
@@ -150,7 +151,7 @@ export const OwnerBookingsPage: React.FC = () => {
               </div>
 
               <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                {(['all', 'confirmed', 'in_storage', 'completed', 'cancelled'] as const).map((st) => (
+                {(['all', 'pending', 'confirmed', 'in_storage', 'completed', 'cancelled'] as const).map((st) => (
                   <button
                     key={st}
                     type="button"
@@ -181,11 +182,13 @@ export const OwnerBookingsPage: React.FC = () => {
                       </span>
                       <span
                         className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                          b.status === 'confirmed'
+                          b.status === 'confirmed' || b.status === 'approved'
                             ? 'bg-[#AFF2C2] text-[#00210F]'
+                            : b.status === 'pending'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300'
                             : b.status === 'in_storage'
                             ? 'bg-blue-100 text-blue-700'
-                            : b.status === 'cancelled'
+                            : b.status === 'cancelled' || b.status === 'rejected'
                             ? 'bg-red-100 text-red-700'
                             : 'bg-gray-100 text-gray-700'
                         }`}
@@ -211,7 +214,26 @@ export const OwnerBookingsPage: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 flex-shrink-0">
-                    {b.status === 'confirmed' && (
+                    {b.status === 'pending' && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateBookingStatus(b.id, 'approved')}
+                          className="h-9 px-3 rounded-xl bg-[#14532D] text-white text-xs font-bold hover:bg-[#0F3D2E] shadow-2xs transition-all active:scale-98 cursor-pointer"
+                        >
+                          {isTa ? 'ஒப்புதல் அளி' : 'Approve'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateBookingStatus(b.id, 'rejected')}
+                          className="h-9 px-3 rounded-xl bg-white border border-red-300 text-red-700 text-xs font-bold hover:bg-red-50 transition-all active:scale-98 cursor-pointer"
+                        >
+                          {isTa ? 'நிராகரி' : 'Reject'}
+                        </button>
+                      </div>
+                    )}
+
+                    {(b.status === 'confirmed' || b.status === 'approved') && (
                       <button
                         type="button"
                         onClick={() => handleOpenScale(b.bookingCode, b.bookedKg, b.bookedCrates, b.chamberName)}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { demandForecastService } from '../services/demandForecastService';
 import {
   Scale,
   CalendarCheck,
@@ -10,6 +11,10 @@ import {
   Thermometer,
   ShieldCheck,
   History,
+  TrendingUp,
+  AlertTriangle,
+  Info,
+  CheckCircle2,
 } from 'lucide-react';
 
 export const OwnerDashboardPage: React.FC = () => {
@@ -33,6 +38,7 @@ export const OwnerDashboardPage: React.FC = () => {
   };
 
   const activeBookingsCount = bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_storage').length;
+  const forecastResult = demandForecastService.generateDemandForecast(bookings, facilities);
 
   return (
     <div className="flex flex-col relative w-full pt-3 pb-28 text-[#1C2420]">
@@ -225,17 +231,15 @@ export const OwnerDashboardPage: React.FC = () => {
             {facility.chambers.map((cham) => (
               <div
                 key={cham.id}
-                className={`p-3.5 rounded-2xl border flex flex-col justify-between ${
-                  cham.isMaintenance ? 'bg-[#FFDCC6]/20 border-[#FFB786]' : 'bg-[#EEF6ED] border-[#DDE4DD]'
-                }`}
+                className={`p-3.5 rounded-2xl border flex flex-col justify-between ${cham.isMaintenance ? 'bg-[#FFDCC6]/20 border-[#FFB786]' : 'bg-[#EEF6ED] border-[#DDE4DD]'
+                  }`}
               >
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#161D18]">{cham.name.split('(')[0]}</span>
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        cham.isMaintenance ? 'bg-[#844000] text-white' : 'bg-[#86F8C2] text-[#00210F]'
-                      }`}
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${cham.isMaintenance ? 'bg-[#844000] text-white' : 'bg-[#86F8C2] text-[#00210F]'
+                        }`}
                     >
                       {cham.isMaintenance ? 'Calibrating' : 'Active'}
                     </span>
@@ -251,6 +255,205 @@ export const OwnerDashboardPage: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* AI Demand Forecasting & Capacity Pressure (Strictly Advisory) */}
+        <div className="bg-white rounded-3xl p-5 border border-[#DFE4DC] shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EEF6ED] pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#E7F5EE] flex items-center justify-center text-[#14532D]">
+                  <TrendingUp size={16} />
+                </div>
+                <h2 className="text-sm font-bold text-[#161D18]">
+                  {isTa ? 'செயற்கை நுண்ணறிவு தேவை & கொள்ளளவு கணிப்பு' : 'AI Cold Storage Demand Forecast'}
+                </h2>
+                <span className="px-2 py-0.5 rounded-full bg-[#FFFBF0] text-[#C8923A] border border-[#F0D590] text-[10px] font-bold">
+                  {forecastResult.modelVersion}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#5B6660] mt-0.5">
+                {isTa
+                  ? 'வரலாற்று முன்பதிவு போக்கு மற்றும் காலவரிசை மாதிரி அடிப்படையில் கணிக்கப்பட்டது'
+                  : 'Time-series double exponential smoothing evaluated with chronological validation'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-[10px] text-[#5B6660]">
+              <Info size={12} className="text-[#C8923A]" />
+              <span>Horizon: 14 Days • Generated: {new Date(forecastResult.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          </div>
+
+          {/* Insufficient Data vs Model Forecast Card */}
+          {!forecastResult.hasSufficientData ? (
+            <div className="p-4 rounded-2xl bg-[#FFFBF0] border border-[#F0D590] space-y-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle size={18} className="text-[#C8923A] flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-[#8C6218] block">
+                    {isTa ? 'வரலாற்று தரவுகள் போதுமானதாக இல்லை' : 'Insufficient Historical Data for Machine Learning Forecast'}
+                  </span>
+                  <p className="text-[11px] text-[#704F12] leading-relaxed">
+                    {isTa
+                      ? `கணினியில் ${forecastResult.sampleCount} முன்பதிவு பதிவுகள் மட்டுமே உள்ளன (நம்பகமான கணிப்பிற்கு குறைந்தது ${forecastResult.minimumRequired} தேவை). தவறான தரவுகளை உருவாக்காமல், உண்மையான தற்போதைய கொள்ளளவு விவரம் கீழே காட்டப்பட்டுள்ளது.`
+                      : `Only ${forecastResult.sampleCount} recorded booking cycle(s) exist in database (minimum ${forecastResult.minimumRequired} required). Rather than inventing fake numbers, showing verified capacity baseline below.`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Historical summary if any */}
+              {forecastResult.historicalDailySummary.length > 0 && (
+                <div className="pt-2 border-t border-[#F0D590]/60">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C6218] block mb-1">
+                    Recorded Historical Demand:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {forecastResult.historicalDailySummary.map((h, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-md bg-white/80 border border-[#F0D590] text-[10px] font-medium text-[#404941]">
+                        {h.date}: {h.totalKg} kg
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Chronological Validation Scorecard */}
+              {forecastResult.evaluation && (
+                <div className="p-3 rounded-2xl bg-[#E7F5EE] border border-[#AFF2C2] text-xs flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-[#14532D]" />
+                    <span className="text-[#14532D] font-bold">
+                      Chronological Evaluation (Train: {forecastResult.evaluation.trainSize} | Test: {forecastResult.evaluation.testSize})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px]">
+                    <span className="text-[#246A42]">Model MAE: <strong>{forecastResult.evaluation.mae} kg</strong></span>
+                    <span className="text-[#5B6660]">Baseline MAE: <strong>{forecastResult.evaluation.baselineMae} kg</strong></span>
+                    <span className="px-2 py-0.5 rounded-full bg-white text-[#14532D] font-bold text-[10px] border border-[#AFF2C2]">
+                      {forecastResult.evaluation.modelBetterThanBaseline ? '✓ Outperforms Baseline' : 'Comparable to Baseline'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Crop Demand Forecast breakdown */}
+              {forecastResult.cropForecasts.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-[#1C2420] block">
+                    {isTa ? 'பயிர் வாரியான தேவை கணிப்பு' : 'Crop-wise Projected Demand'}
+                  </span>
+                  <div className="grid sm:grid-cols-2 gap-2.5">
+                    {forecastResult.cropForecasts.map((c, i) => (
+                      <div key={i} className="p-3 rounded-2xl bg-[#F7F4EC] border border-[#DFE4DC] text-xs space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#14532D] text-sm">{c.cropName}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${c.trend === 'increasing' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                            {c.trend.toUpperCase()} TREND
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 text-center py-1">
+                          <div className="bg-white p-1.5 rounded-xl border border-[#DFE4DC]">
+                            <span className="text-[9px] text-[#5B6660] block">7-Day</span>
+                            <span className="font-bold text-[#1C2420]">{c.projectedKg7d} kg</span>
+                          </div>
+                          <div className="bg-white p-1.5 rounded-xl border border-[#DFE4DC]">
+                            <span className="text-[9px] text-[#5B6660] block">14-Day</span>
+                            <span className="font-bold text-[#14532D]">{c.projectedKg14d} kg</span>
+                          </div>
+                          <div className="bg-white p-1.5 rounded-xl border border-[#DFE4DC]">
+                            <span className="text-[9px] text-[#5B6660] block">30-Day</span>
+                            <span className="font-bold text-[#1C2420]">{c.projectedKg30d} kg</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-[#8C9690] block text-right">
+                          90% Confidence: {c.confidenceLowerKg} kg - {c.confidenceUpperKg} kg
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Facility Capacity Pressure Grid */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-[#1C2420] block">
+              {isTa ? 'கிடங்கு கொள்ளளவு அழுத்தம்' : 'Facility Capacity Pressure & Utilization Outlook'}
+            </span>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {forecastResult.facilityPressures.map((p) => {
+                const isCrit = p.pressureLevel === 'critical';
+                const isMod = p.pressureLevel === 'moderate';
+                return (
+                  <div
+                    key={p.facilityId}
+                    className={`p-3.5 rounded-2xl border space-y-2 ${isCrit
+                        ? 'bg-red-50/20 border-red-300'
+                        : isMod
+                          ? 'bg-amber-50/20 border-amber-300'
+                          : 'bg-[#F7F4EC] border-[#DFE4DC]'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-[#161D18]">{p.facilityName}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${isCrit
+                            ? 'bg-red-100 text-red-800'
+                            : isMod
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}
+                      >
+                        {p.pressureLevel} Pressure
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-[#5B6660]">Projected Occupancy:</span>
+                        <span className="font-bold text-[#1C2420]">{p.projectedOccupancyPercent}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${isCrit ? 'bg-red-500' : isMod ? 'bg-amber-500' : 'bg-[#14532D]'
+                            }`}
+                          style={{ width: `${p.projectedOccupancyPercent}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-[#5B6660] leading-relaxed">
+                      {isTa ? p.advisoryMessageTa : p.advisoryMessage}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Farmer Advisory Tip */}
+          <div className="p-3 rounded-2xl bg-[#E7F5EE] border border-[#AFF2C2] text-xs space-y-1">
+            <span className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block">
+              Farmer-Facing Advisory Notice:
+            </span>
+            <p className="text-[#246A42]">
+              {isTa ? forecastResult.farmerAdvisory.messageTa : forecastResult.farmerAdvisory.messageEn}
+            </p>
+          </div>
+
+          {/* Strict Invariant Disclaimer */}
+          <div className="text-[10px] text-[#8C9690] flex items-start gap-1.5 pt-1">
+            <ShieldCheck size={13} className="text-[#14532D] flex-shrink-0 mt-0.5" />
+            <span>
+              <strong>Non-Autonomous Architecture:</strong> Forecasts are purely advisory for operator logistics. AI never confirms or rejects bookings, modifies prices, or reserves chamber space without operator input.
+            </span>
           </div>
         </div>
 

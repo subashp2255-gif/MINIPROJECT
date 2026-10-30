@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import type { UserRole } from '../types';
 import { User, Phone, ArrowRight, CheckSquare, Square, RefreshCw } from 'lucide-react';
 import { AppLogo } from '../components/AppLogo';
+import { authService } from '../services/authService';
+import { isSupabaseConfigured } from '../lib/supabaseClient';
 
 export const RegisterPage: React.FC = () => {
   const { registerUser, language, setLanguage, showToast } = useApp();
@@ -50,6 +52,43 @@ export const RegisterPage: React.FC = () => {
     setErrorMsg(null);
 
     const fullLocation = `${village.trim()}, ${district.trim()}, ${state}`;
+
+    if (isSupabaseConfigured()) {
+      // Disallow public self-assignment to admin role
+      const safeRole: UserRole = role === 'admin' ? 'farmer' : role;
+      authService.signUp({
+        fullName: name.trim(),
+        phone: phone.trim(),
+        role: safeRole,
+        village: village.trim(),
+        district: district.trim(),
+      }).then(({ error }) => {
+        setIsSubmitting(false);
+        if (error) {
+          setErrorMsg(error.message);
+          return;
+        }
+
+        registerUser(name.trim(), phone.trim(), safeRole, fullLocation);
+        setLanguage(prefLang);
+        localStorage.setItem('srs_onboarded', 'true');
+        localStorage.setItem('srs_user_phone', phone.trim());
+
+        showToast(isTa ? 'கணக்கு உருவாக்கப்பட்டு சுபாபேஸுடன் இணைக்கப்பட்டது!' : 'Account registered and synced with Supabase!', 'success');
+
+        if (safeRole === 'farmer') {
+          navigate('/farmer/home');
+        } else if (safeRole === 'owner') {
+          navigate('/owner/dashboard');
+        } else {
+          navigate('/admin/dashboard');
+        }
+      }).catch((err) => {
+        setIsSubmitting(false);
+        setErrorMsg(err.message || 'Registration failed.');
+      });
+      return;
+    }
 
     setTimeout(() => {
       registerUser(name.trim(), phone.trim(), role, fullLocation);

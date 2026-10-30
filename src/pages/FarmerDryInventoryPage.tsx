@@ -15,7 +15,11 @@ import {
   Edit2,
   MoreVertical,
   CheckCircle2,
+  Sparkles,
+  ShieldCheck,
+  Clock,
 } from 'lucide-react';
+import { inventoryForecastService } from '../services/inventoryForecastService';
 import { Button } from '../components/ui/Button';
 import { Tag, statusToTagVariant } from '../components/ui/Tag';
 import { CropThumbnail } from '../components/ui/CropThumbnail';
@@ -115,6 +119,13 @@ export const FarmerDryInventoryPage: React.FC = () => {
       totalWeight: Math.round(totalWeightInQuintals),
       lowStockCount,
     };
+  }, [dryProducts]);
+
+  const [showForecastPanel, setShowForecastPanel] = useState<boolean>(false);
+
+  // AI-assisted inventory forecast & anomaly detection (strictly advisory)
+  const inventoryAnalysis = useMemo(() => {
+    return inventoryForecastService.analyzeInventory(dryProducts);
   }, [dryProducts]);
 
   // Filtered Products List
@@ -385,6 +396,152 @@ export const FarmerDryInventoryPage: React.FC = () => {
             </span>
           </div>
         </div>
+      </div>
+
+      {/* =========================================================================
+          AI INVENTORY FORECAST & ANOMALY DETECTION (Strictly Decision Support)
+          ========================================================================= */}
+      <div className="rounded-2xl bg-white border border-[#DFE4DC] p-4 shadow-[0_2px_8px_rgba(15,61,46,0.04)] space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#FFFBF0] border border-[#F0D590] flex items-center justify-center text-[#C8923A]">
+              <Sparkles size={16} />
+            </div>
+            <div>
+              <h2 className="text-xs font-bold text-[#14532D]">
+                {isTa ? 'செயற்கை நுண்ணறிவு இருப்பு கணிப்பு & ஆய்வு' : 'AI Inventory Forecast & Anomaly Detection'}
+              </h2>
+              <span className="text-[10px] text-[#5B6660]">
+                {isTa ? 'பயன்பாட்டு வீதம் & அசாதாரண வெளியீடு ஆய்வு' : 'Consumption burn-down & outlier review alerts'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {inventoryAnalysis.anomalies.length > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">
+                {inventoryAnalysis.anomalies.length} {isTa ? 'ஆய்வு' : 'Anomalies'}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowForecastPanel(!showForecastPanel)}
+              className="px-2.5 py-1 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-xs font-semibold text-[#14532D] hover:bg-[#E7F5EE] transition-colors"
+            >
+              {showForecastPanel ? (isTa ? 'மறைக்க' : 'Hide') : (isTa ? 'காட்டுக' : 'View Forecast')}
+            </button>
+          </div>
+        </div>
+
+        {/* Anomaly Banners (Always visible if any anomaly detected) */}
+        {inventoryAnalysis.anomalies.length > 0 && (
+          <div className="space-y-2 pt-1">
+            {inventoryAnalysis.anomalies.map((anom) => (
+              <div
+                key={anom.anomalyId}
+                className={`p-3 rounded-xl border flex items-start justify-between gap-2.5 text-xs ${
+                  anom.severity === 'high' ? 'bg-red-50/40 border-red-200 text-red-900' : 'bg-amber-50/40 border-amber-200 text-amber-900'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} className={`shrink-0 mt-0.5 ${anom.severity === 'high' ? 'text-red-600' : 'text-amber-600'}`} />
+                  <div>
+                    <span className="font-bold block">
+                      {anom.productName}: {isTa ? anom.reasonTa : anom.reasonEn}
+                    </span>
+                    <span className="text-[11px] opacity-80 block mt-0.5">
+                      {isTa ? 'பரிந்துரை:' : 'Review Action:'} {isTa ? anom.reviewActionTa : anom.reviewAction}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] uppercase font-bold shrink-0 opacity-70">
+                  {anom.severity}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Expanded Forecast Details Panel */}
+        {showForecastPanel && (
+          <div className="space-y-3 pt-2 border-t border-[#DFE4DC]">
+            <div className="p-2.5 rounded-xl bg-[#E7F5EE] border border-[#AFF2C2] flex items-center gap-2 text-[11px] text-[#14532D]">
+              <ShieldCheck size={16} className="shrink-0 text-[#14532D]" />
+              <span>
+                <strong>Advisory Only:</strong> Forecasting models estimate consumption rates. AI never alters physical balances or executes unauthorized write-offs.
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {inventoryAnalysis.forecasts.map((f) => (
+                <div key={f.productId} className="p-3 rounded-xl bg-[#F7F4EC] border border-[#DFE4DC] text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-[#1C2420] text-sm">{f.productName}</span>
+                      <span className="text-[10px] text-[#5B6660] block">
+                        Safety Threshold: {f.lowStockThreshold} {f.unit}
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[9px] uppercase font-bold text-[#8C9690] block">Current Verified Stock</span>
+                      <span className="font-bold text-base text-[#14532D]">
+                        {f.currentStock} <span className="text-xs font-normal">{f.unit}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {!f.isSufficientData ? (
+                    <div className="p-2 rounded-lg bg-white border border-[#DFE4DC] text-[11px] text-[#5B6660] flex items-center gap-1.5">
+                      <Clock size={13} className="text-[#C8923A] shrink-0" />
+                      <span>{isTa ? f.advisoryNoteTa : f.advisoryNoteEn}</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Projected Horizon Grid */}
+                      <div className="grid grid-cols-3 gap-1.5 text-center">
+                        <div className="p-2 rounded-lg bg-white border border-[#DFE4DC]">
+                          <span className="text-[9px] uppercase font-bold text-[#5B6660] block">+7 Days</span>
+                          <span className="font-bold text-xs text-[#1C2420]">
+                            {f.projectedStock7d} {f.unit}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white border border-[#DFE4DC]">
+                          <span className="text-[9px] uppercase font-bold text-[#5B6660] block">+14 Days</span>
+                          <span className="font-bold text-xs text-[#1C2420]">
+                            {f.projectedStock14d} {f.unit}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white border border-[#DFE4DC]">
+                          <span className="text-[9px] uppercase font-bold text-[#5B6660] block">+30 Days</span>
+                          <span className="font-bold text-xs text-[#1C2420]">
+                            {f.projectedStock30d} {f.unit}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Burn-down rate & Replenishment note */}
+                      <div className="p-2 rounded-lg bg-white border border-[#DFE4DC] text-[11px] text-[#246A42] flex items-center justify-between">
+                        <span>Burn Rate: ~{f.dailyBurnRate} {f.unit}/day</span>
+                        {f.daysUntilLowStock !== null && (
+                          <span className="font-semibold text-amber-700">
+                            Threshold in ~{f.daysUntilLowStock} days
+                          </span>
+                        )}
+                      </div>
+
+                      {f.suggestedReorderQuantity > 0 && (
+                        <div className="text-[11px] text-[#5B6660]">
+                          <span className="font-bold text-[#14532D]">Suggested Replenishment:</span> {f.suggestedReorderQuantity} {f.unit}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =========================================================================

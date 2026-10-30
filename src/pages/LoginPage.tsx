@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import type { UserRole } from '../types';
 import { Phone, CheckCircle2, ArrowRight, KeyRound, Shield, HelpCircle, X, RefreshCw } from 'lucide-react';
 import { AppLogo } from '../components/AppLogo';
+import { authService } from '../services/authService';
+import { isSupabaseConfigured } from '../lib/supabaseClient';
 
 export const LoginPage: React.FC = () => {
   const { login, language, showToast } = useApp();
@@ -101,6 +103,37 @@ export const LoginPage: React.FC = () => {
     setIsSubmitting(true);
     setErrorMsg(null);
 
+    // If Supabase configured, attempt real authentication
+    if (isSupabaseConfigured()) {
+      authService.signIn(phone, password).then(({ error, profile }) => {
+        setIsSubmitting(false);
+        if (error) {
+          setErrorMsg(error.message || 'Invalid credentials or user not found.');
+          return;
+        }
+
+        const effectiveRole = profile?.role || selectedRole;
+        login(phone, effectiveRole);
+        localStorage.setItem('srs_onboarded', 'true');
+        localStorage.setItem('srs_user_phone', phone);
+
+        showToast(isTa ? 'உள்நுழைவு வெற்றிகரமாக முடிந்தது!' : 'Signed in successfully!', 'success');
+
+        if (effectiveRole === 'farmer') {
+          navigate('/farmer/home');
+        } else if (effectiveRole === 'owner') {
+          navigate('/owner/dashboard');
+        } else {
+          navigate('/admin/dashboard');
+        }
+      }).catch((err) => {
+        setIsSubmitting(false);
+        setErrorMsg(err.message || 'An error occurred during authentication.');
+      });
+      return;
+    }
+
+    // Demo Mode Fallback
     setTimeout(() => {
       login(phone, selectedRole);
       localStorage.setItem('srs_onboarded', 'true');

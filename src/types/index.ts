@@ -57,6 +57,8 @@ export interface Facility {
 
 export type BookingStatus =
   | 'pending'
+  | 'approved'
+  | 'rejected'
   | 'confirmed'
   | 'en_route'
   | 'gate_arrived'

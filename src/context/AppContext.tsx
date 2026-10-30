@@ -34,6 +34,13 @@ import {
   INITIAL_PICKUP_REQUESTS,
 } from '../lib/mockData';
 import { translations } from '../lib/translations';
+import { isSupabaseConfigured, saveSupabaseConfig } from '../lib/supabaseClient';
+import { facilityService } from '../services/facilityService';
+import { bookingService } from '../services/bookingService';
+import { inventoryService } from '../services/inventoryService';
+import { authService } from '../services/authService';
+import { aiNotificationService } from '../services/aiNotificationService';
+import type { BookingStatus as DbBookingStatus } from '../types/database.types';
 
 export interface ToastAlert {
   id: string;
@@ -158,6 +165,15 @@ interface AppContextType {
   calculateCapacityLedger: (facilityId?: string) => CapacityLedger;
   getAIInsights: (facilityId?: string) => AIInsight[];
 
+  // Supabase Database & Auth State
+  isSupabaseReady: boolean;
+  isLoadingDb: boolean;
+  dbError: string | null;
+  refreshFromDatabase: () => Promise<void>;
+  saveSupabaseCredentials: (url: string, key: string) => Promise<boolean>;
+  updateBookingStatus: (bookingId: string, status: DbBookingStatus) => Promise<boolean>;
+  logout: () => Promise<void>;
+
   // Auth & Notifications
   login: (phone: string, role?: UserRole) => boolean;
   registerUser: (name: string, phone: string, role: UserRole, location: string) => boolean;
@@ -210,6 +226,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
+  const [isSupabaseReady, setIsSupabaseReady] = useState<boolean>(() => isSupabaseConfigured());
+  const [isLoadingDb, setIsLoadingDb] = useState<boolean>(false);
+  const [dbError, setDbError] = useState<string | null>(null);
+
   const [facilities, setFacilities] = useState<Facility[]>(INITIAL_FACILITIES);
   const [bookings, setBookings] = useState<Booking[]>(() => {
     const saved = localStorage.getItem('srs_bookings');
@@ -292,6 +312,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('srs_pickup_requests', JSON.stringify(pickupRequests));
   }, [pickupRequests]);
 
+  // AI Predictive Alerts & Anomaly Notification Sync (deduplicated)
+  useEffect(() => {
+    const newAlerts = aiNotificationService.generateDeduplicatedAlerts(
+      facilities,
+      bookings,
+      dryProducts,
+      [],
+      notifications
+    );
+    if (newAlerts.length > 0) {
+      setNotifications((prev) => [...newAlerts, ...prev]);
+    }
+  }, [facilities, bookings, dryProducts]);
+
   const user = USER_PROFILES[role];
 
   const setRole = (newRole: UserRole) => {
@@ -329,11 +363,134 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [dismissToast]);
 
   // =========================================================================
+  // SUPABASE DATABASE SYNCHRONIZATION
+  // =========================================================================
+
+  const refreshFromDatabase = useCallback(async () => {
+    const configured = isSupabaseConfigured();
+    setIsSupabaseReady(configured);
+    if (!configured) {
+      return;
+    }
+
+    setIsLoadingDb(true);
+    setDbError(null);
+
+    try {
+      // 1. Fetch facilities
+      const dbFacilities = await facilityService.getFacilities({ isActiveOnly: false });
+      if (dbFacilities && dbFacilities.length > 0) {
+        setFacilities(dbFacilities.map(facilityService.mapRowToFacility));
+      }
+
+      // 2. Fetch bookings
+      const dbBookings = role === 'owner'
+        ? await bookingService.getOwnerBookings()
+        : await bookingService.getFarmerBookings();
+      if (dbBookings && dbBookings.length > 0) {
+        setBookings(dbBookings.map(bookingService.mapRowToBooking));
+      }
+
+      // 3. Fetch crop batches
+      const dbBatches = await inventoryService.getBatches();
+      if (dbBatches && dbBatches.length > 0) {
+        setBatches(dbBatches.map(inventoryService.mapRowToBatch));
+      }
+
+      // 4. Fetch movements
+      const dbTxs = await inventoryService.getTransactions();
+      if (dbTxs && dbTxs.length > 0) {
+        setMovements(dbTxs.map(inventoryService.mapRowToMovement));
+      }
+    } catch (err: any) {
+      console.warn('[AppContext] Supabase sync notice:', err.message);
+      setDbError(err.message || 'Database connection error');
+    } finally {
+      setIsLoadingDb(false);
+    }
+  }, [role]);
+
+  // Initial load from Supabase
+  useEffect(() => {
+    refreshFromDatabase();
+  }, [refreshFromDatabase]);
+
+  // Supabase Auth listener
+  useEffect(() => {
+    const { unsubscribe } = authService.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const profile = await authService.getProfile(session.user.id);
+        if (profile?.role) {
+          setRoleState(profile.role);
+          USER_PROFILES[profile.role].name = profile.full_name || USER_PROFILES[profile.role].name;
+          if (profile.phone) USER_PROFILES[profile.role].phone = profile.phone;
+          if (profile.village) USER_PROFILES[profile.role].location = `${profile.village}, ${profile.district || ''}`;
+        }
+        refreshFromDatabase();
+      }
+    });
+    return () => unsubscribe();
+  }, [refreshFromDatabase]);
+
+  const saveSupabaseCredentials = async (url: string, key: string): Promise<boolean> => {
+    try {
+      saveSupabaseConfig(url, key);
+      const configured = isSupabaseConfigured();
+      setIsSupabaseReady(configured);
+      if (configured) {
+        await refreshFromDatabase();
+        showToast('Supabase connection verified and database synced!', 'success');
+        return true;
+      } else {
+        showToast('Supabase credentials cleared.', 'info');
+        return false;
+      }
+    } catch (err: any) {
+      showToast(`Connection failed: ${err.message}`, 'error');
+      return false;
+    }
+  };
+
+  const logout = async () => {
+    if (isSupabaseConfigured()) {
+      await authService.signOut();
+    }
+    showToast('Signed out of AgriSync', 'info');
+  };
+
+  const updateBookingStatus = async (bookingId: string, newStatus: DbBookingStatus): Promise<boolean> => {
+    if (isSupabaseConfigured()) {
+      const res = await bookingService.updateStatus(bookingId, newStatus);
+      if (!res.success) {
+        showToast(`Failed to update booking status: ${res.error}`, 'error');
+        return false;
+      }
+      await refreshFromDatabase();
+      showToast(`Booking status updated to ${newStatus}`, 'success');
+      return true;
+    } else {
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus as any } : b))
+      );
+      showToast(`Booking status updated to ${newStatus}`, 'success');
+      return true;
+    }
+  };
+
+  // =========================================================================
   // AUTHENTICATION
   // =========================================================================
 
-  const login = (_phone: string, preferredRole: UserRole = 'farmer'): boolean => {
+  const login = (phone: string, preferredRole: UserRole = 'farmer'): boolean => {
     setRoleState(preferredRole);
+    if (isSupabaseConfigured()) {
+      authService.signIn(phone).then(({ error, profile }) => {
+        if (!error && profile?.role) {
+          setRoleState(profile.role);
+        }
+        refreshFromDatabase();
+      });
+    }
     showToast(`Logged in successfully as ${USER_PROFILES[preferredRole].name}`, 'success');
     return true;
   };
@@ -343,6 +500,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     USER_PROFILES[userRole].phone = phone;
     USER_PROFILES[userRole].location = location;
     setRoleState(userRole);
+
+    if (isSupabaseConfigured()) {
+      const parts = location.split(',');
+      const village = parts[0]?.trim() || '';
+      const district = parts[1]?.trim() || '';
+      authService.signUp({
+        fullName: name,
+        phone,
+        role: userRole,
+        village,
+        district,
+      }).then(({ error }) => {
+        if (error) {
+          showToast(`Supabase registration note: ${error.message}`, 'warning');
+        } else {
+          showToast(`Account synced with Supabase PostgreSQL!`, 'success');
+        }
+        refreshFromDatabase();
+      });
+    }
+
     showToast(`Account registered successfully! Welcome to AgriSync, ${name}`, 'success');
     return true;
   };
@@ -433,6 +611,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setNotifications((prev) => [newNotif, ...prev]);
 
+    // Supabase DB atomic reservation
+    if (isSupabaseConfigured()) {
+      bookingService.createBooking({
+        farmerId: newBookingData.farmerId,
+        facilityId: newBookingData.facilityId,
+        cropName: newBookingData.cropName,
+        quantityKg: newBookingData.bookedKg,
+        startDate: newBookingData.startDate,
+        endDate: newBookingData.endDate,
+        notes: `Variety: ${newBookingData.variety}`,
+      }).then((res) => {
+        if (!res.success) {
+          showToast(`Supabase Reservation Error: ${res.error}`, 'error');
+        } else {
+          refreshFromDatabase();
+        }
+      }).catch((err) => {
+        console.warn('[AppContext] Supabase booking exception:', err.message);
+      });
+    }
+
     showToast(`Chamber capacity reserved successfully! Booking ID: ${newBooking.bookingCode}`, 'success');
     return newBooking;
   };
@@ -447,6 +646,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBookings((prev) =>
       prev.map((b) => (b.bookingCode === bookingCode ? { ...b, status: 'cancelled' } : b))
     );
+
+    // If Supabase configured, atomically update status and release reserved capacity
+    if (isSupabaseConfigured()) {
+      bookingService.updateStatus(target.id, 'cancelled').then((res) => {
+        if (!res.success) {
+          showToast(`Supabase cancellation note: ${res.error}`, 'warning');
+        } else {
+          refreshFromDatabase();
+        }
+      }).catch((err) => {
+        console.warn('[AppContext] Supabase cancellation exception:', err.message);
+      });
+    }
 
     // CRITICAL INVARIANT: Releasing reservation does not delete physical inventory!
     const notif: NotificationItem = {
@@ -531,6 +743,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         receiptNumber: `#REC-INT-${Math.floor(1000 + Math.random() * 9000)}`,
       };
       setMovements((prev) => [movement, ...prev]);
+    }
+
+    if (isSupabaseConfigured()) {
+      inventoryService.createBatch({
+        owner_id: user.id && user.id.length > 20 ? user.id : '22222222-2222-2222-2222-222222222222',
+        facility_id: batchData.facilityId && batchData.facilityId.length > 20 ? batchData.facilityId : null,
+        crop_name: batchData.cropName,
+        batch_code: batchCode,
+        quantity_kg: batchData.initialStockKg,
+        harvest_date: new Date().toISOString().split('T')[0],
+        expiry_date: batchData.expectedStorageEnd || batchData.expiryDate || null,
+        storage_location: batchData.chamberName,
+        status: 'stored',
+        notes: batchData.notes || null,
+      }).then(() => {
+        refreshFromDatabase();
+      }).catch((err) => {
+        console.warn('[AppContext] Supabase createBatch exception:', err.message);
+      });
     }
 
     showToast(`Batch ${batchCode} registered successfully in ${batchData.chamberName}!`, 'success');
@@ -1576,6 +1807,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateDryProductThreshold,
         calculateCapacityLedger,
         getAIInsights,
+        isSupabaseReady,
+        isLoadingDb,
+        dbError,
+        refreshFromDatabase,
+        saveSupabaseCredentials,
+        updateBookingStatus,
+        logout,
         login,
         registerUser,
         scheduleInspection,

@@ -11,7 +11,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ customTitle }) => {
-  const { language, setLanguage, notifications } = useApp();
+  const { language, setLanguage, notifications, isSupabaseReady } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -77,14 +77,22 @@ export const Header: React.FC<HeaderProps> = ({ customTitle }) => {
         {/* LEFT SLOT */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {isTabScreen ? (
-            <button
-              type="button"
-              onClick={() => navigate('/farmer/home')}
-              className="flex items-center text-left focus:outline-hidden"
-              aria-label="AgriSync Home"
-            >
-              <AppLogo size={34} showText={true} showSubtitle={false} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => navigate('/farmer/home')}
+                className="flex items-center text-left focus:outline-hidden cursor-pointer"
+                aria-label="AgriSync Home"
+              >
+                <AppLogo size={34} showText={true} showSubtitle={false} />
+              </button>
+              <span
+                title={isSupabaseReady ? 'Supabase Live Connected' : 'Local Demo Mode'}
+                className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                  isSupabaseReady ? 'bg-emerald-500 ring-2 ring-emerald-200 animate-pulse' : 'bg-amber-400'
+                }`}
+              />
+            </div>
           ) : (
             <div className="flex items-center gap-2 min-w-0">
               <button

@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { ToastContainer } from './components/ToastContainer';
+import { AIAssistantDrawer } from './components/AIAssistantDrawer';
 
 // Public & Auth Pages
 import { LandingPage } from './pages/LandingPage';
@@ -66,6 +67,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <ToastContainer />
         {!hideChrome && !pageRendersOwnHeader && <Header />}
         <main className="flex-1 w-full">{children}</main>
+        {!hideChrome && <AIAssistantDrawer />}
         {!hideChrome && <BottomNav />}
       </div>
     </div>
